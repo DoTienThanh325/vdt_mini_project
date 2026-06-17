@@ -19,10 +19,11 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -76,31 +77,30 @@ public class Document {
 			joinColumns = @JoinColumn(name = "document_id"),
 			inverseJoinColumns = @JoinColumn(name = "receiver_org_id")
 	)
-	private Set<Organization> receiverOrganizations = new HashSet<>();
+	private List<Organization> receiverOrganizations = new ArrayList<>();
 
 	@Builder.Default
 	@OneToMany(mappedBy = "document")
-	private Set<DocumentFile> files = new HashSet<>();
+	private List<DocumentFile> files = new ArrayList<>();
+	
+	@OneToOne(mappedBy = "document")
+	private DocumentSignature signature;
 
 	@Builder.Default
 	@OneToMany(mappedBy = "document")
-	private Set<DocumentSignature> signatures = new HashSet<>();
+	private List<DocumentTransfer> transfers = new ArrayList<>();
 
 	@Builder.Default
 	@OneToMany(mappedBy = "document")
-	private Set<DocumentTransfer> transfers = new HashSet<>();
-
-	@Builder.Default
-	@OneToMany(mappedBy = "document")
-	private Set<WorkflowStep> workflowSteps = new HashSet<>();
+	private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
 	@Builder.Default
 	@OneToMany(mappedBy = "relatedDocument")
-	private Set<Notification> notifications = new HashSet<>();
+	private List<Notification> notifications = new ArrayList<>();
 
 	public enum Status {
-		DRAFT,
-		PENDING,
+		CREATED,
+		APPROVED,
 		SIGNED,
 		SENT,
 		RECEIVED,

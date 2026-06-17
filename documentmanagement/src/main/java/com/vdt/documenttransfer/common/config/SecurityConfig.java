@@ -59,10 +59,7 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 .requestMatchers(
-                                                                "/api/admin/**")
-                                                .hasRole("ADMIN")
-
-                                                .requestMatchers(
+                                                                "/api/admin/**",
                                                                 "/api/users/*/assignment",
                                                                 "/api/users/*/status",
                                                                 "/api/interconnected-systems/**",
@@ -74,6 +71,20 @@ public class SecurityConfig {
                                                 .requestMatchers(
                                                                 "/api/organizations/new")
                                                 .hasRole("ORGADMIN")
+
+                                                .requestMatchers(
+                                                                "/api/documents/new",
+                                                                "/api/documents/*/files")
+                                                .hasRole("STAFF")
+
+                                                .requestMatchers(
+                                                                "/api/documents/*/approve",
+                                                                "/api/documents/*/reject")
+                                                .hasRole("MANAGER")
+
+                                                .requestMatchers(
+                                                                "/api/documents/*/sign/check")
+                                                .hasRole("CLERK")
 
                                                 .anyRequest().authenticated())
                                 .authenticationProvider(authenticationProvider())

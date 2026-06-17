@@ -1,0 +1,72 @@
+package com.vdt.documenttransfer.modules.document.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.vdt.documenttransfer.modules.document.dto.NewDocumentRequest;
+import com.vdt.documenttransfer.modules.document.service.DocumentService;
+import com.vdt.documenttransfer.modules.user.entity.User;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/documents")
+public class DocumentController {
+    private final DocumentService documentService;
+
+    @PostMapping("/new")
+    public ResponseEntity<?> createNewDocument(@AuthenticationPrincipal(expression = "user") User user,
+            @RequestBody NewDocumentRequest request) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+            Integer userId = user.getId();
+            Integer orgId = user.getOrganization().getId();
+
+            return ResponseEntity.ok(documentService.createNewDocument(userId, orgId, request));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{documentId}/approve")
+    public ResponseEntity<?> approveNewDocument(@AuthenticationPrincipal(expression = "user") User user,
+            @PathVariable Integer documentId) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            return ResponseEntity.ok(documentService.approveNewDocument(documentId, user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{documentId}/reject")
+    public ResponseEntity<?> rejectNewDocument(@AuthenticationPrincipal(expression = "user") User user,
+            @PathVariable Integer documentId) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            return ResponseEntity.ok(documentService.rejectNewDocument(documentId, user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+}
