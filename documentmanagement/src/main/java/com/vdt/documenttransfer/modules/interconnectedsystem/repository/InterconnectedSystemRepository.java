@@ -14,4 +14,8 @@ public interface InterconnectedSystemRepository extends JpaRepository<Interconne
     boolean existsByEndpointUrl(String enpointUrl);
 
     boolean existsBySystemCode(String systemCode);
+
+    Optional<InterconnectedSystem> findByApiKey(String apiKey);
+
+    boolean existsByApiKey(String apiKey);
 }

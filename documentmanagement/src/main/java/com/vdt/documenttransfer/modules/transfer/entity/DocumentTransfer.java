@@ -1,6 +1,7 @@
 package com.vdt.documenttransfer.modules.transfer.entity;
 
 import com.vdt.documenttransfer.modules.document.entity.Document;
+import com.vdt.documenttransfer.modules.organization.entity.Organization;
 import com.vdt.documenttransfer.modules.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,9 +44,13 @@ public class DocumentTransfer {
 	@JoinColumn(name = "sender_id", nullable = false)
 	private User sender;
 
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "receiver_id", nullable = false)
+	@ManyToOne
+	@JoinColumn(name = "receiver_id")
 	private User receiver;
+
+	@ManyToOne
+	@JoinColumn(name = "receiver_org_id")
+	private Organization receiverOrganization;
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "document_id", nullable = false)
@@ -64,6 +69,7 @@ public class DocumentTransfer {
 		SENT,
 		RECEIVED,
 		RESPONDED,
-		FAILED
+		FAILED,
+		PENDING
 	}
 }

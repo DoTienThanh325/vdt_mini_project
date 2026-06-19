@@ -30,7 +30,7 @@ public class DocumentFileController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
-            return ResponseEntity.ok(documentFileService.uploadFiles(documentId, files));
+            return ResponseEntity.ok(documentFileService.uploadFiles(documentId, files, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());

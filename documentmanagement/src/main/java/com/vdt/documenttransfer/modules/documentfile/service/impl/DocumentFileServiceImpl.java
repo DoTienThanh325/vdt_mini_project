@@ -15,6 +15,7 @@ import com.vdt.documenttransfer.modules.documentfile.dto.DocumentFileResponse;
 import com.vdt.documenttransfer.modules.documentfile.entity.DocumentFile;
 import com.vdt.documenttransfer.modules.documentfile.repository.DocumentFileRepository;
 import com.vdt.documenttransfer.modules.documentfile.service.DocumentFileService;
+import com.vdt.documenttransfer.modules.user.entity.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,9 +30,13 @@ public class DocumentFileServiceImpl implements DocumentFileService {
     private String uploadDir;
 
     @Override
-    public List<DocumentFileResponse> uploadFiles(Integer documentId, MultipartFile[] files) {
+    public List<DocumentFileResponse> uploadFiles(Integer documentId, MultipartFile[] files, User user) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Document không tồn tại"));
+
+        if (user.getId() != document.getCreatedBy().getId()) {
+            throw new RuntimeException("Bạn không có quyền upload file của tài liệu, văn bản này");
+        }
 
         if (files == null || files.length == 0) {
             throw new RuntimeException("Vui lòng chọn ít nhất một file");
@@ -63,7 +68,7 @@ public class DocumentFileServiceImpl implements DocumentFileService {
                 String originalFileName = file.getOriginalFilename();
 
                 String extension = getFileExtension(originalFileName);
-                
+
                 String storedFileName = folderName
                         + "-"
                         + String.format("%04d", fileIndex)

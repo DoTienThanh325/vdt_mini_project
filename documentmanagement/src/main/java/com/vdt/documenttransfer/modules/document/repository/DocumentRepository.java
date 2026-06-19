@@ -1,5 +1,7 @@
 package com.vdt.documenttransfer.modules.document.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,4 +15,6 @@ public interface DocumentRepository extends JpaRepository<Document, Integer> {
             WHERE document_code LIKE CONCAT('DOC-', :code, '-', :year, '-%')
             """, nativeQuery = true)
     Integer findMaxDocumentCodeSequenceByYear(@Param("year") int year, @Param("code") String code);
+
+    Optional<Document> findByDocumentCode(String code);
 }

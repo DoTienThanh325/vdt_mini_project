@@ -3,12 +3,10 @@ package com.vdt.documenttransfer.modules.user.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vdt.documenttransfer.modules.auditlog.entity.AuditLog;
 import com.vdt.documenttransfer.modules.document.entity.Document;
-import com.vdt.documenttransfer.modules.notification.entity.Notification;
 import com.vdt.documenttransfer.modules.organization.entity.Organization;
 import com.vdt.documenttransfer.modules.role.entity.Role;
 import com.vdt.documenttransfer.modules.signature.entity.DocumentSignature;
 import com.vdt.documenttransfer.modules.transfer.entity.DocumentTransfer;
-import com.vdt.documenttransfer.modules.workflowstep.entity.WorkflowStep;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -101,18 +99,8 @@ public class User implements Serializable {
 
 	@JsonIgnore
 	@Builder.Default
-	@OneToMany(mappedBy = "assignee")
-	private Set<WorkflowStep> workflowSteps = new HashSet<>();
-
-	@JsonIgnore
-	@Builder.Default
 	@OneToMany(mappedBy = "actor")
 	private Set<AuditLog> auditLogs = new HashSet<>();
-
-	@JsonIgnore
-	@Builder.Default
-	@OneToMany(mappedBy = "user")
-	private Set<Notification> notifications = new HashSet<>();
 
 	public enum Status {
 		ACTIVE,

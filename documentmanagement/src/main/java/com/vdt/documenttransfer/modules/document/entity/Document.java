@@ -1,12 +1,10 @@
 package com.vdt.documenttransfer.modules.document.entity;
 
 import com.vdt.documenttransfer.modules.documentfile.entity.DocumentFile;
-import com.vdt.documenttransfer.modules.notification.entity.Notification;
 import com.vdt.documenttransfer.modules.organization.entity.Organization;
 import com.vdt.documenttransfer.modules.signature.entity.DocumentSignature;
 import com.vdt.documenttransfer.modules.transfer.entity.DocumentTransfer;
 import com.vdt.documenttransfer.modules.user.entity.User;
-import com.vdt.documenttransfer.modules.workflowstep.entity.WorkflowStep;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,8 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -71,15 +67,6 @@ public class Document {
 	private LocalDateTime updatedAt;
 
 	@Builder.Default
-	@ManyToMany
-	@JoinTable(
-			name = "document_receivers",
-			joinColumns = @JoinColumn(name = "document_id"),
-			inverseJoinColumns = @JoinColumn(name = "receiver_org_id")
-	)
-	private List<Organization> receiverOrganizations = new ArrayList<>();
-
-	@Builder.Default
 	@OneToMany(mappedBy = "document")
 	private List<DocumentFile> files = new ArrayList<>();
 	
@@ -89,14 +76,6 @@ public class Document {
 	@Builder.Default
 	@OneToMany(mappedBy = "document")
 	private List<DocumentTransfer> transfers = new ArrayList<>();
-
-	@Builder.Default
-	@OneToMany(mappedBy = "document")
-	private List<WorkflowStep> workflowSteps = new ArrayList<>();
-
-	@Builder.Default
-	@OneToMany(mappedBy = "relatedDocument")
-	private List<Notification> notifications = new ArrayList<>();
 
 	public enum Status {
 		CREATED,

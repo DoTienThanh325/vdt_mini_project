@@ -83,7 +83,10 @@ public class SecurityConfig {
                                                 .hasRole("MANAGER")
 
                                                 .requestMatchers(
-                                                                "/api/documents/*/sign/check")
+                                                                "/api/documents/*/sign/check",
+                                                                "/api/documents/*/transfer",
+                                                                "/api/documents/*/receive",
+                                                                "/api/interconnect/**")
                                                 .hasRole("CLERK")
 
                                                 .anyRequest().authenticated())

@@ -2,6 +2,7 @@ package com.vdt.documenttransfer.modules.organization.entity;
 
 import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.interconnectedsystem.entity.InterconnectedSystem;
+import com.vdt.documenttransfer.modules.transfer.entity.DocumentTransfer;
 import com.vdt.documenttransfer.modules.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,14 +11,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -68,15 +67,15 @@ public class Organization {
 
 	@Builder.Default
 	@OneToMany(mappedBy = "organization")
-	private Set<User> users = new HashSet<>();
+	private List<User> users = new ArrayList<>();
 
 	@Builder.Default
 	@OneToMany(mappedBy = "senderOrganization")
-	private Set<Document> sentDocuments = new HashSet<>();
+	private List<Document> sentDocuments = new ArrayList<>();
 
 	@Builder.Default
-	@ManyToMany(mappedBy = "receiverOrganizations")
-	private Set<Document> receivedDocuments = new HashSet<>();
+	@OneToMany(mappedBy = "receiverOrganization")
+	private List<DocumentTransfer> documentTransfers = new ArrayList<>();
 
 	public enum Status {
 		ACTIVE,
