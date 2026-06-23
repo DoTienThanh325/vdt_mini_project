@@ -10,7 +10,7 @@ import com.vdt.documenttransfer.modules.user.entity.User;
 public interface OrganizationService {
     OrgResponse createNew(NewOrgRequest request, User user);
 
-    OrgResponse accessNewOrg(Integer Id);
+    OrgResponse accessNewOrg(Integer Id, User user);
 
     OrgResponse updateOrg(UpdateOrgRequest request, Integer id);
 

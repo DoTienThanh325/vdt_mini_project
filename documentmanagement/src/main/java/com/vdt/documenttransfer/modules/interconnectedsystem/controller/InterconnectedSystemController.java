@@ -40,7 +40,11 @@ public class InterconnectedSystemController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
-            return ResponseEntity.ok(interconnectedSystemService.createNew(request));
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
+            return ResponseEntity.ok(interconnectedSystemService.createNew(request, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());
@@ -56,7 +60,11 @@ public class InterconnectedSystemController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
-            return ResponseEntity.ok(interconnectedSystemService.update(id, request));
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
+            return ResponseEntity.ok(interconnectedSystemService.update(id, request, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());

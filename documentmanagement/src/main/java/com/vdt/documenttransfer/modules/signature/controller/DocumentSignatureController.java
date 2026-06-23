@@ -29,6 +29,10 @@ public class DocumentSignatureController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
+            if (!leader.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             return ResponseEntity.ok(documentSignatureService.signDocument(documentId, leader));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -42,6 +46,10 @@ public class DocumentSignatureController {
         try {
             if (clerk == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            if (!clerk.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
             }
 
             return ResponseEntity.ok(documentSignatureService.checkSignatureDocument(documentId, clerk));

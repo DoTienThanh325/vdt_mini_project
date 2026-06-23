@@ -30,6 +30,11 @@ public class DocumentController {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
+
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             Integer userId = user.getId();
             Integer orgId = user.getOrganization().getId();
 
@@ -48,6 +53,10 @@ public class DocumentController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             return ResponseEntity.ok(documentService.approveNewDocument(documentId, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -61,6 +70,10 @@ public class DocumentController {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
             }
 
             return ResponseEntity.ok(documentService.rejectNewDocument(documentId, user));

@@ -30,6 +30,10 @@ public class DocumentFileController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
+            if(!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             return ResponseEntity.ok(documentFileService.uploadFiles(documentId, files, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

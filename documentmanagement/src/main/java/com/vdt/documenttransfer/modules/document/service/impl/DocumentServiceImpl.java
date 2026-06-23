@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.vdt.documenttransfer.common.logging.AppLogger;
 import com.vdt.documenttransfer.modules.document.dto.DocumentResponse;
 import com.vdt.documenttransfer.modules.document.dto.NewDocumentRequest;
 import com.vdt.documenttransfer.modules.document.entity.Document;
@@ -25,36 +26,51 @@ public class DocumentServiceImpl implements DocumentService {
         private final OrganizationRepository organizationRepository;
         private final DocumentRepository documentRepository;
         private final NotificationService notificationService;
+        private final AppLogger appLogger;
 
         @Override
         @Transactional
         public DocumentResponse createNewDocument(Integer userId, Integer orgId,
                         NewDocumentRequest request) {
-                User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
-                Organization org = organizationRepository.findById(orgId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
-                String code = getOrganizationCodeSuffix(org.getOrgCode());
-                LocalDateTime now = LocalDateTime.now();
+                String documentCode = null;
+                try {
+                        User user = userRepository.findById(userId)
+                                        .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+                        Organization org = organizationRepository.findById(orgId)
+                                        .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
+                        String code = getOrganizationCodeSuffix(org.getOrgCode());
+                        LocalDateTime now = LocalDateTime.now();
 
-                Document document = Document
-                                .builder()
-                                .documentType(request.getDocumentType())
-                                .documentCode(generateDocumentCode(now.getYear(), code))
-                                .summary(request.getSummary())
-                                .status(Document.Status.CREATED)
-                                .senderOrganization(org)
-                                .createdBy(user)
-                                .createdAt(now)
-                                .build();
+                        Document document = Document
+                                        .builder()
+                                        .documentType(request.getDocumentType())
+                                        .documentCode(generateDocumentCode(now.getYear(), code))
+                                        .summary(request.getSummary())
+                                        .status(Document.Status.CREATED)
+                                        .senderOrganization(org)
+                                        .createdBy(user)
+                                        .createdAt(now)
+                                        .build();
 
-                Document savedDocument = documentRepository.save(document);
+                        Document savedDocument = documentRepository.save(document);
+                        documentCode = savedDocument.getDocumentCode();
 
-                notificationService.createNotification(userId, "Tài liệu, văn bản mới được tạo", "Tài liệu, văn bản " 
-                                + savedDocument.getDocumentCode() + " - " + savedDocument.getSummary()
-                                + " đã được tạo và đàng chờ xử lý");
+                        notificationService.createNotification(userId, "Tài liệu, văn bản mới được tạo",
+                                        "Tài liệu, văn bản "
+                                                        + savedDocument.getDocumentCode() + " - "
+                                                        + savedDocument.getSummary()
+                                                        + " đã được tạo và đang chờ xử lý");
 
-                return entityToResponse(savedDocument, "Thêm document thành công");
+                        appLogger.infoDocument("CREATE_DOCUMENT", userId, savedDocument.getDocumentCode(),
+                                        "Create document successfully");
+
+                        return entityToResponse(savedDocument, "Thêm document thành công");
+                } catch (RuntimeException e) {
+                        appLogger.errorDocument("CREATE_DOCUMENT", userId,
+                                        documentCode != null ? documentCode : String.valueOf(orgId),
+                                        "Create document failed: " + e.getMessage(), e);
+                        throw e;
+                }
         }
 
         private String generateDocumentCode(int year, String code) {
@@ -89,43 +105,72 @@ public class DocumentServiceImpl implements DocumentService {
 
         @Override
         public DocumentResponse approveNewDocument(Integer documentId, User user) {
-                Document document = documentRepository.findById(documentId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
-                if (user.getOrganization().getId() != document.getSenderOrganization().getId()) {
-                        throw new RuntimeException("Văn bản không thuộc đơn vị liên thông của bạn");
+                String documentCode = String.valueOf(documentId);
+                try {
+                        Document document = documentRepository.findById(documentId)
+                                        .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
+                        documentCode = document.getDocumentCode();
+
+                        if (!user.getOrganization().getId().equals(document.getSenderOrganization().getId())) {
+                                throw new RuntimeException("Văn bản không thuộc đơn vị liên thông của bạn");
+                        }
+
+                        if (!document.getStatus().name().equals("CREATED")) {
+                                throw new RuntimeException("Văn bản này đã được duyệt hoặc bị từ chối");
+                        }
+                        document.setStatus(Document.Status.APPROVED);
+
+                        Document savedDocument = documentRepository.save(document);
+
+                        notificationService.createNotification(document.getCreatedBy().getId(),
+                                        "Tài liệu, văn bản được phê duyệt",
+                                        "Tài liệu, văn bản " + savedDocument.getDocumentCode() + " - "
+                                                        + savedDocument.getSummary()
+                                                        + " đã được trưởng phòng phê duyệt");
+
+                        appLogger.infoDocument("APPROVE_DOCUMENT", user.getId(), savedDocument.getDocumentCode(),
+                                        "Approve document successfully");
+
+                        return entityToResponse(savedDocument, "Duyệt văn bản thành công");
+                } catch (RuntimeException e) {
+                        appLogger.errorDocument("APPROVE_DOCUMENT", user != null ? user.getId() : null, documentCode,
+                                        "Approve document failed: " + e.getMessage(), e);
+                        throw e;
                 }
-
-                if (!document.getStatus().name().equals("CREATED")) {
-                        throw new RuntimeException("Văn bản này đã được duyệt hoặc bị từ chối");
-                }
-                document.setStatus(Document.Status.APPROVED);
-
-                Document savedDocument = documentRepository.save(document);
-
-                notificationService.createNotification(document.getCreatedBy().getId(), "Tài liệu, văn bản được phê duyệt",
-                                "Tài liệu, văn bản " + savedDocument.getDocumentCode() + " - " + savedDocument.getSummary() + " đã được trưởng phòng phê duyệt");
-
-                return entityToResponse(savedDocument, "Duyệt văn bản thành công");
         }
 
         @Override
         public DocumentResponse rejectNewDocument(Integer documentId, User user) {
-                Document document = documentRepository.findById(documentId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
-                if (user.getOrganization().getId() != document.getSenderOrganization().getId()) {
-                        throw new RuntimeException("Văn bản không thuộc đơn vị liên thông của bạn");
+                String documentCode = String.valueOf(documentId);
+                try {
+                        Document document = documentRepository.findById(documentId)
+                                        .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
+                        documentCode = document.getDocumentCode();
+
+                        if (!user.getOrganization().getId().equals(document.getSenderOrganization().getId())) {
+                                throw new RuntimeException("Văn bản không thuộc đơn vị liên thông của bạn");
+                        }
+
+                        if (!document.getStatus().name().equals("CREATED")) {
+                                throw new RuntimeException("Văn bản này đã được duyệt hoặc bị từ chối");
+                        }
+                        document.setStatus(Document.Status.REJECTED);
+
+                        Document savedDocument = documentRepository.save(document);
+
+                        notificationService.createNotification(document.getCreatedBy().getId(),
+                                        "Tài liệu, văn bản bị từ chối",
+                                        "Tài liệu, văn bản " + savedDocument.getSummary()
+                                                        + " đã bị trưởng phòng từ chối");
+
+                        appLogger.infoDocument("REJECT_DOCUMENT", user.getId(), savedDocument.getDocumentCode(),
+                                        "Reject document successfully");
+
+                        return entityToResponse(savedDocument, "Từ chối văn bản thành công");
+                } catch (RuntimeException e) {
+                        appLogger.errorDocument("REJECT_DOCUMENT", user != null ? user.getId() : null, documentCode,
+                                        "Reject document failed: " + e.getMessage(), e);
+                        throw e;
                 }
-
-                if (!document.getStatus().name().equals("CREATED")) {
-                        throw new RuntimeException("Văn bản này đã được duyệt hoặc bị từ chối");
-                }
-                document.setStatus(Document.Status.REJECTED);
-
-                Document savedDocument = documentRepository.save(document);
-
-                notificationService.createNotification(document.getCreatedBy().getId(), "Tài liệu, văn bản bị từ chối",
-                                "Tài liệu, văn bản " + savedDocument.getSummary() + " đã bị trưởng phòng từ chối");
-
-                return entityToResponse(savedDocument, "Từ chối văn bản thành công");
         }
 }

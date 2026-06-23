@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.vdt.documenttransfer.common.logging.AppLogger;
 import com.vdt.documenttransfer.modules.interconnectedsystem.entity.InterconnectedSystem;
 import com.vdt.documenttransfer.modules.interconnectedsystem.repository.InterconnectedSystemRepository;
 import com.vdt.documenttransfer.modules.organization.dto.NewOrgRequest;
@@ -24,63 +25,82 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final InterconnectedSystemRepository interconnectedSystemRepository;
     private final UserRepository userRepository;
+    private final AppLogger appLogger;
 
     @Override
     public OrgResponse createNew(NewOrgRequest request, User user) {
-        String orgCode = request.getOrgCode();
-        String orgEmail = request.getEmail();
-        String phone = request.getPhone();
-        Integer systemId = request.getSystemId();
+        try {
+            String orgCode = request.getOrgCode();
+            String orgEmail = request.getEmail();
+            String phone = request.getPhone();
+            Integer systemId = request.getSystemId();
 
-        if (organizationRepository.existsByOrgCode(orgCode)) {
-            throw new RuntimeException("Mã đơn vị đã được sử dụng");
+            if (organizationRepository.existsByOrgCode(orgCode)) {
+                throw new RuntimeException("Mã đơn vị đã được sử dụng");
+            }
+
+            if (organizationRepository.existsByEmail(orgEmail)) {
+                throw new RuntimeException("Email đơn vị đã được sử dụng");
+            }
+
+            if (organizationRepository.existsByPhone(phone)) {
+                throw new RuntimeException("Số điện thoại đơn vị đã được sử dụng");
+            }
+
+            InterconnectedSystem interSystem = interconnectedSystemRepository.findById(systemId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hệ thống liên thông"));
+
+            LocalDateTime now = LocalDateTime.now();
+
+            Organization organization = Organization.builder()
+                    .orgCode(orgCode)
+                    .orgName(request.getOrgName())
+                    .address(request.getAddress())
+                    .email(request.getEmail())
+                    .phone(request.getPhone())
+                    .status(Organization.Status.INACTIVE)
+                    .system(interSystem)
+                    .createdAt(now)
+                    .updatedAt(null)
+                    .build();
+
+            Organization savedOrganization = organizationRepository.save(organization);
+
+            user.setOrganization(savedOrganization);
+            user.setUpdatedAt(now);
+            userRepository.save(user);
+
+            appLogger.infoAction("CREATE_ORGANIZATION", user.getId(), "ORGANIZATION",
+                    savedOrganization.getOrgCode(), "Create organization successfully");
+
+            return entityToResponse(savedOrganization, "Tạo org thành công");
+        } catch (RuntimeException e) {
+            appLogger.errorAction("CREATE_ORGANIZATION", user != null ? user.getId() : null, "ORGANIZATION",
+                    request != null ? request.getOrgCode() : null, "Create organization failed: " + e.getMessage(), e);
+            throw e;
         }
-
-        if (organizationRepository.existsByEmail(orgEmail)) {
-            throw new RuntimeException("Email đơn vị đã được sử dụng");
-        }
-
-        if (organizationRepository.existsByPhone(phone)) {
-            throw new RuntimeException("Số điện thoại đơn vị đã được sử dụng");
-        }
-
-        InterconnectedSystem interSystem = interconnectedSystemRepository.findById(systemId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy hệ thống liên thông"));
-
-        LocalDateTime now = LocalDateTime.now();
-
-        Organization organization = Organization.builder()
-                .orgCode(orgCode)
-                .orgName(request.getOrgName())
-                .address(request.getAddress())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .status(Organization.Status.INACTIVE)
-                .system(interSystem)
-                .createdAt(now)
-                .updatedAt(null)
-                .build();
-
-        Organization savedOrganization = organizationRepository.save(organization);
-
-        user.setOrganization(savedOrganization);
-        user.setUpdatedAt(now);
-        userRepository.save(user);
-
-        return entityToResponse(savedOrganization, "Tạo org thành công");
     }
 
     @Override
-    public OrgResponse accessNewOrg(Integer Id) {
-        Organization organization = organizationRepository.findById(Id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
-        LocalDateTime now = LocalDateTime.now();
-        organization.setStatus(Organization.Status.ACTIVE);
-        organization.setUpdatedAt(now);
+    public OrgResponse accessNewOrg(Integer Id, User user) {
+        try {
+            Organization organization = organizationRepository.findById(Id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
+            LocalDateTime now = LocalDateTime.now();
+            organization.setStatus(Organization.Status.ACTIVE);
+            organization.setUpdatedAt(now);
 
-        Organization savedOrg = organizationRepository.save(organization);
+            Organization savedOrg = organizationRepository.save(organization);
 
-        return entityToResponse(savedOrg, "Duyệt đơn vị liên thông thành công");
+            appLogger.infoAction("APPROVE_ORGANIZATION", user != null ? user.getId() : null, "ORGANIZATION",
+                    savedOrg.getOrgCode(), "Approve organization successfully");
+
+            return entityToResponse(savedOrg, "Duyệt đơn vị liên thông thành công");
+        } catch (RuntimeException e) {
+            appLogger.errorAction("APPROVE_ORGANIZATION", user != null ? user.getId() : null, "ORGANIZATION",
+                    String.valueOf(Id), "Approve organization failed: " + e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
@@ -126,9 +146,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public List<OrgResponse> findAll() {
         List<Organization> orgs = organizationRepository.findAll();
-        List<OrgResponse> orgResponses = orgs.stream().map(org -> entityToResponse(org, null)).toList();
-
-        return orgResponses;
+        return orgs.stream().map(org -> entityToResponse(org, null)).toList();
     }
 
     private OrgResponse entityToResponse(Organization entity, String message) {

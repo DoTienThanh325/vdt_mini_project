@@ -33,6 +33,11 @@ public class DocumentTransferController {
             if (clerk == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
+
+            if (!clerk.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             Integer orgId = request.get("receiverOrgId");
             return ResponseEntity
                     .ok(documentTransferService.transferDocument(documentId, orgId, clerk, authorizationHeader));
@@ -49,6 +54,11 @@ public class DocumentTransferController {
             if (clerk == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
+
+            if (!clerk.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             Integer orgId = clerk.getOrganization().getId();
             return ResponseEntity
                     .ok(documentTransferService.accessReceiveDocument(documentId, clerk, orgId));
@@ -64,6 +74,9 @@ public class DocumentTransferController {
         try {
             if (manager == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+            if (!manager.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
             }
             Integer orgId = manager.getOrganization().getId();
             return ResponseEntity

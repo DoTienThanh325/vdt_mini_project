@@ -47,6 +47,10 @@ public class OrganizationController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
             return ResponseEntity.ok(organizationService.createNew(request, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -60,6 +64,10 @@ public class OrganizationController {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
             }
 
             return ResponseEntity.ok(organizationService.updateOrg(request, id));
@@ -77,7 +85,11 @@ public class OrganizationController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
-            return ResponseEntity.ok(organizationService.accessNewOrg(id));
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
+            return ResponseEntity.ok(organizationService.accessNewOrg(id, user));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());
