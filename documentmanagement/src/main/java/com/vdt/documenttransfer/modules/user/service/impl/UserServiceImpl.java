@@ -1,12 +1,15 @@
 package com.vdt.documenttransfer.modules.user.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import com.vdt.documenttransfer.common.logging.AppLogger;
+import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.modules.notification.service.NotificationService;
 import com.vdt.documenttransfer.modules.organization.entity.Organization;
 import com.vdt.documenttransfer.modules.organization.repository.OrganizationRepository;
@@ -125,6 +128,46 @@ public class UserServiceImpl implements UserService {
                                                 : null)
 
                                 .message(message)
+                                .build();
+        }
+
+        @Override
+        public PageResponse<UserResponse> findAll(int page, int size) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+                Page<User> userPage = userRepository.findAll(pageable);
+
+                List<UserResponse> content = userPage.getContent().stream().map(user -> entityToResponse(user, null))
+                                .toList();
+
+                return PageResponse.<UserResponse>builder()
+                                .content(content)
+                                .page(userPage.getNumber())
+                                .size(userPage.getSize())
+                                .totalElements(userPage.getTotalElements())
+                                .totalPages(userPage.getTotalPages())
+                                .first(userPage.isFirst())
+                                .last(userPage.isLast())
+                                .build();
+        }
+
+        @Override
+        public PageResponse<UserResponse> findByStatus(int page, int size, String status) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+                User.Status userStatus = User.Status.valueOf(status);
+                Page<User> userPage = userRepository.findByStatus(userStatus, pageable);
+
+                List<UserResponse> content = userPage.getContent().stream().map(user -> entityToResponse(user, null))
+                                .toList();
+
+                return PageResponse.<UserResponse>builder()
+                                .content(content)
+                                .page(userPage.getNumber())
+                                .size(userPage.getSize())
+                                .totalElements(userPage.getTotalElements())
+                                .totalPages(userPage.getTotalPages())
+                                .first(userPage.isFirst())
+                                .last(userPage.isLast())
                                 .build();
         }
 }

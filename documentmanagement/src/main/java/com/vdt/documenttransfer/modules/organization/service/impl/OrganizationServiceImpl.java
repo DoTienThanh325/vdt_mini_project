@@ -3,9 +3,11 @@ package com.vdt.documenttransfer.modules.organization.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import com.vdt.documenttransfer.common.logging.AppLogger;
+import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.modules.interconnectedsystem.entity.InterconnectedSystem;
 import com.vdt.documenttransfer.modules.interconnectedsystem.repository.InterconnectedSystemRepository;
 import com.vdt.documenttransfer.modules.organization.dto.NewOrgRequest;
@@ -143,12 +145,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         return entityToResponse(savedOrg, "Cập nhật thông tin đơn vị liên thông thành công");
     }
 
-    @Override
-    public List<OrgResponse> findAll() {
-        List<Organization> orgs = organizationRepository.findAll();
-        return orgs.stream().map(org -> entityToResponse(org, null)).toList();
-    }
-
     private OrgResponse entityToResponse(Organization entity, String message) {
         return OrgResponse.builder()
                 .id(entity.getId())
@@ -164,6 +160,27 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .message(message)
+                .build();
+    }
+
+    @Override
+    public PageResponse<OrgResponse> findAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<Organization> orgPage = organizationRepository.findAll(pageable);
+
+        List<OrgResponse> content = orgPage.getContent().stream()
+                .map(org -> entityToResponse(org, null))
+                .toList();
+
+        return PageResponse.<OrgResponse>builder()
+                .content(content)
+                .page(orgPage.getNumber())
+                .size(orgPage.getSize())
+                .totalElements(orgPage.getTotalElements())
+                .totalPages(orgPage.getTotalPages())
+                .first(orgPage.isFirst())
+                .last(orgPage.isLast())
                 .build();
     }
 }

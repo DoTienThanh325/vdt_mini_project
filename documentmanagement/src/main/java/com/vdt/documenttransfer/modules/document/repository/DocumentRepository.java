@@ -2,6 +2,8 @@ package com.vdt.documenttransfer.modules.document.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +19,12 @@ public interface DocumentRepository extends JpaRepository<Document, Integer> {
     Integer findMaxDocumentCodeSequenceByYear(@Param("year") int year, @Param("code") String code);
 
     Optional<Document> findByDocumentCode(String code);
+
+    Page<Document> findAll(Pageable pageable);
+
+    Page<Document> findByStatusAndSenderOrganization_Id(Document.Status status, Integer orgId, Pageable pageable);
+
+    Page<Document> findBySenderOrganization_Id(Integer senderOrgId, Pageable pageable);
+
+    Page<Document> findByCreatedBy_Id(Integer staffId, Pageable pageable);
 }

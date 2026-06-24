@@ -65,7 +65,9 @@ public class SecurityConfig {
                                                                 "/api/interconnected-systems/**",
                                                                 "/api/organizations/*/status",
                                                                 "/api/organizations/*/",
-                                                                "/api/users/")
+                                                                "/api/users/",
+                                                                "/api/users",
+                                                                "/api/users/status/*")
                                                 .hasRole("ADMIN")
 
                                                 .requestMatchers(
@@ -74,7 +76,8 @@ public class SecurityConfig {
 
                                                 .requestMatchers(
                                                                 "/api/documents/new",
-                                                                "/api/documents/*/files")
+                                                                "/api/documents/*/files",
+                                                                "/api/documents/createdBy")
                                                 .hasRole("STAFF")
 
                                                 .requestMatchers(
@@ -88,6 +91,10 @@ public class SecurityConfig {
                                                                 "/api/documents/*/receive",
                                                                 "/api/interconnect/**")
                                                 .hasRole("CLERK")
+
+                                                .requestMatchers(
+                                                                "/api/documents/status/*")
+                                                .hasAnyRole("MANAGER", "LEADER", "CLERK")
 
                                                 .anyRequest().authenticated())
                                 .authenticationProvider(authenticationProvider())

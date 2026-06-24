@@ -1,7 +1,7 @@
 package com.vdt.documenttransfer.modules.organization.service;
 
-import java.util.List;
 
+import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.modules.organization.dto.NewOrgRequest;
 import com.vdt.documenttransfer.modules.organization.dto.OrgResponse;
 import com.vdt.documenttransfer.modules.organization.dto.UpdateOrgRequest;
@@ -14,5 +14,5 @@ public interface OrganizationService {
 
     OrgResponse updateOrg(UpdateOrgRequest request, Integer id);
 
-    List<OrgResponse> findAll();
+    PageResponse<OrgResponse> findAll(int page, int size);
 }

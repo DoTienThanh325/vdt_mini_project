@@ -2,6 +2,8 @@ package com.vdt.documenttransfer.modules.organization.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.vdt.documenttransfer.modules.organization.entity.Organization;
 
@@ -13,4 +15,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Inte
     boolean existsByEmail(String orgEmail);
 
     boolean existsByPhone(String orgPhone);
+
+    Page<Organization> findAll(Pageable pageable);
 }

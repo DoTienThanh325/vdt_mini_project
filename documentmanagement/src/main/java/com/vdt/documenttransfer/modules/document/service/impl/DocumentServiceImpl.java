@@ -1,14 +1,21 @@
 package com.vdt.documenttransfer.modules.document.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.vdt.documenttransfer.common.logging.AppLogger;
+import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.modules.document.dto.DocumentResponse;
 import com.vdt.documenttransfer.modules.document.dto.NewDocumentRequest;
 import com.vdt.documenttransfer.modules.document.entity.Document;
+import com.vdt.documenttransfer.modules.document.mapper.EntityToDTO;
 import com.vdt.documenttransfer.modules.document.repository.DocumentRepository;
 import com.vdt.documenttransfer.modules.document.service.DocumentService;
 import com.vdt.documenttransfer.modules.notification.service.NotificationService;
@@ -27,6 +34,7 @@ public class DocumentServiceImpl implements DocumentService {
         private final DocumentRepository documentRepository;
         private final NotificationService notificationService;
         private final AppLogger appLogger;
+        private final EntityToDTO entityToDTO;
 
         @Override
         @Transactional
@@ -64,7 +72,8 @@ public class DocumentServiceImpl implements DocumentService {
                         appLogger.infoDocument("CREATE_DOCUMENT", userId, savedDocument.getDocumentCode(),
                                         "Create document successfully");
 
-                        return entityToResponse(savedDocument, "Thêm document thành công");
+                        return entityToDTO.entityToResponseNotSelectFilesAndTransfers(savedDocument,
+                                        "Tạo văn bản thành công");
                 } catch (RuntimeException e) {
                         appLogger.errorDocument("CREATE_DOCUMENT", userId,
                                         documentCode != null ? documentCode : String.valueOf(orgId),
@@ -88,19 +97,6 @@ public class DocumentServiceImpl implements DocumentService {
                 }
 
                 return orgCode.substring(4);
-        }
-
-        private DocumentResponse entityToResponse(Document document, String message) {
-                return DocumentResponse.builder()
-                                .id(document.getId())
-                                .documentType(document.getDocumentType())
-                                .documentCode(document.getDocumentCode())
-                                .summary(document.getSummary())
-                                .status(document.getStatus().name())
-                                .creatdAt(document.getCreatedAt())
-                                .updatedAt(document.getUpdatedAt())
-                                .message(message)
-                                .build();
         }
 
         @Override
@@ -131,7 +127,8 @@ public class DocumentServiceImpl implements DocumentService {
                         appLogger.infoDocument("APPROVE_DOCUMENT", user.getId(), savedDocument.getDocumentCode(),
                                         "Approve document successfully");
 
-                        return entityToResponse(savedDocument, "Duyệt văn bản thành công");
+                        return entityToDTO.entityToResponseNotSelectFilesAndTransfers(savedDocument,
+                                        "Duyệt văn bản thành công");
                 } catch (RuntimeException e) {
                         appLogger.errorDocument("APPROVE_DOCUMENT", user != null ? user.getId() : null, documentCode,
                                         "Approve document failed: " + e.getMessage(), e);
@@ -166,11 +163,88 @@ public class DocumentServiceImpl implements DocumentService {
                         appLogger.infoDocument("REJECT_DOCUMENT", user.getId(), savedDocument.getDocumentCode(),
                                         "Reject document successfully");
 
-                        return entityToResponse(savedDocument, "Từ chối văn bản thành công");
+                        return entityToDTO.entityToResponseNotSelectFilesAndTransfers(savedDocument,
+                                        "Từ chối văn bản thành công");
                 } catch (RuntimeException e) {
                         appLogger.errorDocument("REJECT_DOCUMENT", user != null ? user.getId() : null, documentCode,
                                         "Reject document failed: " + e.getMessage(), e);
                         throw e;
                 }
+        }
+
+        @Override
+        public PageResponse<DocumentResponse> findByStatusAndSenderOrg(String status, int orgId, int page, int size) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+                Document.Status documentStatus = Document.Status.valueOf(status);
+
+                Page<Document> documentPage = documentRepository.findByStatusAndSenderOrganization_Id(documentStatus,
+                                orgId, pageable);
+
+                List<DocumentResponse> content = documentPage.getContent().stream()
+                                .map(document -> entityToDTO.entityToResponseNotSelectFilesAndTransfers(document, null))
+                                .toList();
+
+                return PageResponse.<DocumentResponse>builder()
+                                .content(content)
+                                .page(documentPage.getNumber())
+                                .size(documentPage.getSize())
+                                .totalElements(documentPage.getTotalElements())
+                                .totalPages(documentPage.getTotalPages())
+                                .first(documentPage.isFirst())
+                                .last(documentPage.isLast())
+                                .build();
+        }
+
+        @Override
+        public DocumentResponse findById(Integer documentId) {
+                Document document = documentRepository.findById(documentId)
+                                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin tài liệu, văn bản"));
+
+                DocumentResponse response = entityToDTO.entityToResponseSelectFilesAndTransfers(document,
+                                "Lấy thông tin tài liệu, văn bản thành công");
+
+                return response;
+        }
+
+        @Override
+        public PageResponse<DocumentResponse> findAllByOrg(int page, int size, Integer senderOrgId) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+                Page<Document> documentPage = documentRepository.findBySenderOrganization_Id(senderOrgId, pageable);
+
+                List<DocumentResponse> content = documentPage.getContent().stream()
+                                .map(document -> entityToDTO.entityToResponseNotSelectFilesAndTransfers(document, null))
+                                .toList();
+
+                return PageResponse.<DocumentResponse>builder()
+                                .content(content)
+                                .page(documentPage.getNumber())
+                                .size(documentPage.getSize())
+                                .totalElements(documentPage.getTotalElements())
+                                .totalPages(documentPage.getTotalPages())
+                                .first(documentPage.isFirst())
+                                .last(documentPage.isLast())
+                                .build();
+        }
+
+        @Override
+        public PageResponse<DocumentResponse> findAllByStaff(int staffId, int page, int size) {
+                Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+                Page<Document> documentPage = documentRepository.findByCreatedBy_Id(staffId, pageable);
+
+                List<DocumentResponse> content = documentPage.getContent().stream()
+                                .map(document -> entityToDTO.entityToResponseNotSelectFilesAndTransfers(document, null))
+                                .toList();
+
+                return PageResponse.<DocumentResponse>builder()
+                                .content(content)
+                                .page(documentPage.getNumber())
+                                .size(documentPage.getSize())
+                                .totalElements(documentPage.getTotalElements())
+                                .totalPages(documentPage.getTotalPages())
+                                .first(documentPage.isFirst())
+                                .last(documentPage.isLast())
+                                .build();
         }
 }

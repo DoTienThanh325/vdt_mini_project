@@ -66,4 +66,36 @@ public class UserController {
                     .body("Error: " + e.getMessage());
         }
     }
+
+    @GetMapping("")
+    public ResponseEntity<?> getAll(@AuthenticationPrincipal(expression = "user") User user,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            return ResponseEntity.ok(userService.findAll(page, size));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<?> getAllByStatus(@AuthenticationPrincipal(expression = "user") User user,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+            @PathVariable String status) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            return ResponseEntity.ok(userService.findByStatus(page, size, status));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
 }

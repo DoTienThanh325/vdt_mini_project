@@ -1,6 +1,7 @@
 package com.vdt.documenttransfer.modules.organization.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vdt.documenttransfer.modules.organization.dto.NewOrgRequest;
@@ -26,13 +27,14 @@ public class OrganizationController {
     private final OrganizationService organizationService;
 
     @GetMapping("")
-    public ResponseEntity<?> getAll(@AuthenticationPrincipal(expression = "user") User user) {
+    public ResponseEntity<?> getAll(@AuthenticationPrincipal(expression = "user") User user,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
-            return ResponseEntity.ok(organizationService.findAll());
+            return ResponseEntity.ok(organizationService.findAll(page, size));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());
