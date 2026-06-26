@@ -1,0 +1,46 @@
+.content-panel {
+  display: grid;
+  min-height: calc(100dvh - 190px);
+  place-items: center;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.empty-state {
+  padding: 48px 24px;
+  color: #101828;
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  place-items: center;
+  border-radius: 20px;
+  background: #eff4ff;
+  color: #155eef;
+}
+
+svg {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+}

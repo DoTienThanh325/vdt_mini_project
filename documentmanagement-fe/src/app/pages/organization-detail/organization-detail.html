@@ -1,0 +1,122 @@
+<div class="detail-page">
+  <button class="back-button" type="button" (click)="goBack()">‹ Quay lại danh sách đơn vị</button>
+
+  @if (loading) {
+    <section class="detail-card state-card"><span class="spinner"></span>Đang tải thông tin đơn vị...</section>
+  } @else if (errorMessage && !organization) {
+    <section class="detail-card state-card error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="reloadData()">Thử lại</button>
+    </section>
+  } @else if (organization) {
+    <div class="page-heading">
+      <div>
+        <p>{{ organization.orgCode }}</p>
+        <h2>{{ organization.orgName }}</h2>
+      </div>
+    </div>
+
+    @if (successMessage) {
+      <div class="message success">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="message error">{{ errorMessage }}</div>
+    }
+
+    <section class="detail-card">
+      <div class="card-heading">
+        <h3>Thông tin đơn vị liên thông</h3>
+        <span class="status-badge" [class]="statusClass(organization.status)">
+          {{ organization.status }}
+        </span>
+      </div>
+
+      <div class="information-grid">
+        <div class="field">
+          <label for="orgCode">Mã đơn vị</label>
+          @if (editing) {
+            <input id="orgCode" [(ngModel)]="form.orgCode" />
+          } @else {
+            <strong>{{ organization.orgCode }}</strong>
+          }
+        </div>
+
+        <div class="field">
+          <span>Tên đơn vị</span>
+          <strong>{{ organization.orgName }}</strong>
+        </div>
+
+        <div class="field">
+          <label for="address">Địa chỉ</label>
+          @if (editing) {
+            <input id="address" [(ngModel)]="form.address" />
+          } @else {
+            <strong>{{ organization.address || '—' }}</strong>
+          }
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          @if (editing) {
+            <input id="email" type="email" [(ngModel)]="form.email" />
+          } @else {
+            <strong>{{ organization.email || '—' }}</strong>
+          }
+        </div>
+
+        <div class="field">
+          <label for="phone">Số điện thoại</label>
+          @if (editing) {
+            <input id="phone" type="tel" [(ngModel)]="form.phone" />
+          } @else {
+            <strong>{{ organization.phone || '—' }}</strong>
+          }
+        </div>
+
+        <div class="field">
+          <label for="systemId">Hệ thống liên thông</label>
+          @if (editing) {
+            <select id="systemId" [(ngModel)]="form.systemId">
+              @for (system of systems; track system.id) {
+                <option [ngValue]="system.id">{{ system.systemCode }}</option>
+              }
+            </select>
+          } @else {
+            <strong>{{ organization.systemCode }} — {{ organization.systemName }}</strong>
+          }
+        </div>
+
+        <div class="field">
+          <span>Ngày tạo</span>
+          <strong>{{ formatDateTime(organization.createdAt) }}</strong>
+        </div>
+
+        <div class="field">
+          <span>Cập nhật gần nhất</span>
+          <strong>{{ formatDateTime(organization.updatedAt) }}</strong>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        @if (editing) {
+          <button class="cancel-button" type="button" [disabled]="saving" (click)="cancelEdit()">Hủy</button>
+          <button class="save-button" type="button" [disabled]="saving" (click)="save()">
+            {{ saving ? 'Đang cập nhật...' : 'Lưu thay đổi' }}
+          </button>
+        } @else {
+          @if (organization.status !== 'ACTIVE') {
+            <button
+              class="activate-button"
+              type="button"
+              [disabled]="activating"
+              (click)="activateOrganization()"
+            >
+              {{ activating ? 'Đang kích hoạt...' : 'Kích hoạt đơn vị' }}
+            </button>
+          }
+          <button class="edit-button" type="button" (click)="startEdit()">Chỉnh sửa thông tin</button>
+        }
+      </div>
+    </section>
+  }
+</div>

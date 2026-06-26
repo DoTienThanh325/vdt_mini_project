@@ -1,0 +1,182 @@
+<section class="document-card">
+  <div class="table-heading">
+    <div>
+      <h2>Văn bản đã tạo</h2>
+      <p>{{ totalElements }} văn bản do bạn tạo</p>
+    </div>
+    <button class="create-button" type="button" (click)="openCreateForm()">Tạo văn bản mới</button>
+  </div>
+
+  @if (actionMessage) {
+    <div class="list-feedback success">{{ actionMessage }}</div>
+  }
+  @if (actionErrorMessage && !createModalOpen) {
+    <div class="list-feedback error">{{ actionErrorMessage }}</div>
+  }
+
+  @if (loading) {
+    <div class="state-message">
+      <span class="spinner"></span>
+      Đang tải danh sách văn bản...
+    </div>
+  } @else if (errorMessage) {
+    <div class="state-message error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="loadDocuments()">Thử lại</button>
+    </div>
+  } @else if (documents.length === 0) {
+    <div class="state-message">Chưa có văn bản nào do bạn tạo.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã văn bản</th>
+            <th>Loại văn bản</th>
+            <th>Tóm tắt</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th class="action-column">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (document of documents; track document.id) {
+            <tr>
+              <td><strong>{{ document.documentCode }}</strong></td>
+              <td>{{ documentTypeLabel(document.documentType) || '-' }}</td>
+              <td class="summary-cell">{{ document.summary || '-' }}</td>
+              <td>
+                <span class="status-badge" [class]="statusClass(document.status)">
+                  {{ statusLabel(document.status) }}
+                </span>
+              </td>
+              <td>{{ formatDateTime(documentCreatedAt(document)) }}</td>
+              <td class="action-column">
+                <button
+                  class="delete-document-button"
+                  type="button"
+                  [disabled]="deletingDocumentId !== null"
+                  (click)="deleteDocument(document)"
+                  aria-label="Xóa văn bản"
+                  title="Xóa văn bản"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 6h18"></path>
+                    <path d="M8 6V4h8v2"></path>
+                    <path d="M19 6l-1 14H6L5 6"></path>
+                    <path d="M10 11v5"></path>
+                    <path d="M14 11v5"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <p>Trang <strong>{{ page + 1 }}</strong> / {{ totalPages }}</p>
+      <div class="pagination-controls">
+        <button type="button" [disabled]="first" (click)="loadDocuments(page - 1)" aria-label="Trang trước">‹</button>
+        @for (pageNumber of displayedPages; track pageNumber) {
+          <button type="button" [class.active]="pageNumber === page" (click)="loadDocuments(pageNumber)">
+            {{ pageNumber + 1 }}
+          </button>
+        }
+        <button type="button" [disabled]="last" (click)="loadDocuments(page + 1)" aria-label="Trang sau">›</button>
+      </div>
+    </div>
+  }
+</section>
+
+@if (createModalOpen) {
+  <div class="modal-backdrop">
+    <section class="modal-panel create-document-modal">
+      <div class="modal-heading">
+        <div>
+          <h3>Tạo văn bản mới</h3>
+          <p>Nhập thông tin văn bản và chọn file đính kèm</p>
+        </div>
+        <button class="icon-button" type="button" [disabled]="createLoading" (click)="closeCreateForm()">×</button>
+      </div>
+
+      <form class="create-form" (ngSubmit)="createDocument()">
+        @if (actionErrorMessage) {
+          <div class="action-feedback error">{{ actionErrorMessage }}</div>
+        }
+
+        <label for="createDocumentType">
+          <span>Loại văn bản</span>
+          <select
+            id="createDocumentType"
+            name="createDocumentType"
+            [(ngModel)]="createDocumentType"
+            [disabled]="createLoading"
+            required
+          >
+            @for (documentType of documentTypes; track documentType) {
+              <option [value]="documentType">{{ documentTypeLabel(documentType) }}</option>
+            }
+          </select>
+        </label>
+
+        <label for="createSummary">
+          <span>Tóm tắt</span>
+          <textarea
+            id="createSummary"
+            name="createSummary"
+            [(ngModel)]="createSummary"
+            [disabled]="createLoading"
+            rows="5"
+            required
+          ></textarea>
+        </label>
+
+        <label class="file-upload" for="createFiles">
+          <span>File đính kèm</span>
+          <input
+            id="createFiles"
+            name="createFiles"
+            type="file"
+            multiple
+            [disabled]="createLoading"
+            (change)="onFilesSelected($event)"
+          />
+          @if (selectedFiles.length === 0) {
+            <small>Chọn file để upload</small>
+          } @else {
+            <ul class="selected-file-list">
+              @for (file of selectedFiles; track file.name + file.size + file.lastModified + $index) {
+                <li>
+                  <div>
+                    <span>{{ file.name }}</span>
+                    <small>{{ formatSelectedFileSize(file.size) }}</small>
+                  </div>
+                  <button
+                    class="remove-file-button"
+                    type="button"
+                    [disabled]="createLoading"
+                    (click)="removeSelectedFile($index)"
+                    aria-label="Xóa file"
+                  >
+                    ×
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </label>
+
+        <div class="modal-actions">
+          <button class="secondary-action" type="button" [disabled]="createLoading" (click)="closeCreateForm()">
+            Hủy
+          </button>
+          <button class="primary-action" type="submit" [disabled]="createLoading">
+            {{ createLoading ? 'Đang tạo...' : 'Tạo văn bản' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

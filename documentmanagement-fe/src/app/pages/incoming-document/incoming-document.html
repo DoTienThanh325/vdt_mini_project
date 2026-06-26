@@ -1,0 +1,96 @@
+<section class="document-card">
+  <div class="table-heading">
+    <div>
+      <h2>Văn bản nhận</h2>
+      <p>{{ totalElements }} văn bản trong đơn vị</p>
+    </div>
+
+    <form class="search-form">
+      <label for="incomingStatus">
+        <span>Trạng thái</span>
+        <select
+          id="incomingStatus"
+          name="incomingStatus"
+          [(ngModel)]="selectedStatus"
+          (ngModelChange)="onStatusChange()"
+        >
+          <option value="">Tất cả trạng thái</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ statusLabel(status) }}</option>
+          }
+        </select>
+      </label>
+    </form>
+  </div>
+
+  @if (loading) {
+    <div class="state-message">
+      <span class="spinner"></span>
+      Đang tải danh sách văn bản...
+    </div>
+  } @else if (errorMessage) {
+    <div class="state-message error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="loadDocuments()">Thử lại</button>
+    </div>
+  } @else if (documents.length === 0) {
+    <div class="state-message">Chưa có văn bản nhận nào.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã văn bản</th>
+            <th>Loại văn bản</th>
+            <th>Tóm tắt</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th class="action-column">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (document of documents; track document.id) {
+            <tr>
+              <td><strong>{{ document.documentCode }}</strong></td>
+              <td>{{ documentTypeLabel(document.documentType) || '-' }}</td>
+              <td class="summary-cell">{{ document.summary || '-' }}</td>
+              <td>
+                <span class="status-badge" [class]="statusClass(document.status)">
+                  {{ statusLabel(document.status) }}
+                </span>
+              </td>
+              <td>{{ formatDateTime(documentCreatedAt(document)) }}</td>
+              <td class="action-column">
+                <button
+                  class="detail-link"
+                  type="button"
+                  [disabled]="!canViewDetail(document)"
+                  [title]="canViewDetail(document) ? 'Xem chi tiết' : 'Chỉ CLERK được xem văn bản đã gửi'"
+                  (click)="viewDetail(document)"
+                >
+                  Xem chi tiết
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <p>Trang <strong>{{ page + 1 }}</strong> / {{ totalPages }}</p>
+      <div class="pagination-controls">
+        <button type="button" [disabled]="first" (click)="loadDocuments(page - 1)" aria-label="Trang trước">‹</button>
+        @for (pageNumber of displayedPages; track pageNumber) {
+          <button type="button" [class.active]="pageNumber === page" (click)="loadDocuments(pageNumber)">
+            {{ pageNumber + 1 }}
+          </button>
+        }
+        <button type="button" [disabled]="last" (click)="loadDocuments(page + 1)" aria-label="Trang sau">›</button>
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,77 @@
+<section class="system-card">
+  <div class="table-heading">
+    <div>
+      <h2>Danh sách hệ thống liên thông</h2>
+      <p>{{ systems.length }} hệ thống</p>
+    </div>
+    <button class="create-button" type="button" (click)="createSystem()">
+      <span>+</span>
+      Tạo hệ thống liên thông
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="state-message">
+      <span class="spinner"></span>
+      Đang tải danh sách hệ thống...
+    </div>
+  } @else if (errorMessage) {
+    <div class="state-message error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="loadSystems()">Thử lại</button>
+    </div>
+  } @else if (systems.length === 0) {
+    <div class="state-message">Chưa có hệ thống liên thông nào.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã hệ thống</th>
+            <th>Tên hệ thống</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th class="action-column">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (system of systems; track system.id) {
+            <tr>
+              <td><strong>{{ system.systemCode }}</strong></td>
+              <td>{{ system.systemName }}</td>
+              <td>
+                <span class="status-badge" [class]="statusClass(system.status)">
+                  {{ system.status }}
+                </span>
+              </td>
+              <td>{{ formatDateTime(system.createdAt) }}</td>
+              <td class="action-column">
+                <div class="row-actions">
+                  <button class="detail-link" type="button" (click)="viewDetail(system)">
+                    Xem chi tiết
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="deactivate-button"
+                    type="button"
+                    [class.activate]="system.status !== 'ACTIVE'"
+                    [disabled]="updatingSystemId !== null"
+                    (click)="updateStatus(system)"
+                  >
+                    @if (updatingSystemId === system.id) {
+                      Đang xử lý...
+                    } @else {
+                      {{ system.status === 'ACTIVE' ? 'Ngừng hoạt động' : 'Kích hoạt' }}
+                    }
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

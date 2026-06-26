@@ -1,0 +1,78 @@
+<div class="create-page">
+  <button class="back-button" type="button" (click)="cancel()">
+    ‹ Quay lại danh sách hệ thống
+  </button>
+
+  <section class="form-card">
+    <div class="form-heading">
+      <h2>Tạo hệ thống liên thông</h2>
+      <p>Nhập thông tin kết nối của hệ thống mới.</p>
+    </div>
+
+    @if (errorMessage) {
+      <div class="error-message">{{ errorMessage }}</div>
+    }
+
+    <form (ngSubmit)="submit()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="systemCode">Mã hệ thống <span>*</span></label>
+          <input
+            id="systemCode"
+            name="systemCode"
+            type="text"
+            [(ngModel)]="request.systemCode"
+            placeholder="Ví dụ: SYS_HN"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="systemName">Tên hệ thống <span>*</span></label>
+          <input
+            id="systemName"
+            name="systemName"
+            type="text"
+            [(ngModel)]="request.systemName"
+            placeholder="Nhập tên hệ thống"
+            required
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label for="endpointUrl">Endpoint URL <span>*</span></label>
+          <input
+            id="endpointUrl"
+            name="endpointUrl"
+            type="url"
+            [(ngModel)]="request.endpointUrl"
+            placeholder="http://localhost:8081/api/interconnect/..."
+            required
+          />
+        </div>
+
+        <div class="form-group full-width">
+          <label for="apiKey">API Key <span>*</span></label>
+          <input
+            id="apiKey"
+            name="apiKey"
+            type="password"
+            [(ngModel)]="request.apiKey"
+            placeholder="Nhập API key"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="cancel-button" type="button" [disabled]="submitting" (click)="cancel()">
+          Hủy
+        </button>
+        <button class="submit-button" type="submit" [disabled]="submitting">
+          {{ submitting ? 'Đang tạo...' : 'Tạo hệ thống' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

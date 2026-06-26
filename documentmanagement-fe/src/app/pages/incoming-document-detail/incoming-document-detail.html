@@ -1,0 +1,127 @@
+<section class="detail-page">
+  <div class="page-heading">
+    <button class="back-button" type="button" (click)="backToList()">‹ Quay lại</button>
+    <div>
+      <h2>Chi tiết văn bản nhận</h2>
+      @if (displayDocument) {
+        <p>{{ displayDocument.documentCode }}</p>
+      }
+    </div>
+  </div>
+
+  @if (loading && !displayDocument) {
+    <div class="state-message">
+      <span class="spinner"></span>
+      Đang tải chi tiết văn bản...
+    </div>
+  } @else if (errorMessage && !displayDocument) {
+    <div class="state-message error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="loadDocument()">Thử lại</button>
+    </div>
+  } @else if (displayDocument) {
+    <div class="detail-content">
+      @if (actionMessage) {
+        <div class="action-feedback success">{{ actionMessage }}</div>
+      }
+      @if (actionErrorMessage) {
+        <div class="action-feedback error">{{ actionErrorMessage }}</div>
+      }
+
+      <section class="detail-section">
+        <h4>Thông tin văn bản</h4>
+        <dl class="detail-grid">
+          <div>
+            <dt>Mã văn bản</dt>
+            <dd>{{ displayDocument.documentCode }}</dd>
+          </div>
+          <div>
+            <dt>Tổ chức gửi</dt>
+            <dd>{{ displayDocument.senderOrgName || '-' }}</dd>
+          </div>
+          <div>
+            <dt>Loại văn bản</dt>
+            <dd>{{ documentTypeLabel(displayDocument.documentType) }}</dd>
+          </div>
+          <div>
+            <dt>Trạng thái</dt>
+            <dd>
+              <span class="status-badge" [class]="statusClass(displayDocument.status)">
+                {{ statusLabel(displayDocument.status) }}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>Ngày tạo</dt>
+            <dd>{{ formatDateTime(documentCreatedAt(displayDocument)) }}</dd>
+          </div>
+          <div class="full-row">
+            <dt>Tóm tắt</dt>
+            <dd>{{ displayDocument.summary || '-' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      @if (isClerk) {
+        <section class="detail-section action-section">
+          <h4>Thao tác</h4>
+          <div class="action-row">
+            <button
+              class="primary-action"
+              type="button"
+              [disabled]="!canConfirmReceive || actionLoading"
+              (click)="confirmReceive()"
+            >
+              {{ actionLoading ? 'Đang xác nhận...' : 'Xác nhận nhận' }}
+            </button>
+          </div>
+        </section>
+      }
+
+      <section class="detail-section">
+        <h4>Files</h4>
+        @if (fileErrorMessage) {
+          <p class="file-error">{{ fileErrorMessage }}</p>
+        }
+        @if (documentFiles(displayDocument).length === 0) {
+          <p class="empty-detail">Chưa có file đính kèm.</p>
+        } @else {
+          <div class="file-list">
+            @for (file of documentFiles(displayDocument); track file.id) {
+              <article class="file-item">
+                <div class="file-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 3h7l4 4v14H7z"></path>
+                    <path d="M14 3v4h4M9 12h6M9 16h6"></path>
+                  </svg>
+                </div>
+                <div class="file-info">
+                  <strong>{{ file.originalFileName }}</strong>
+                  <span>{{ formatFileSize(file.fileSize) }}</span>
+                </div>
+                <div class="file-actions">
+                  <button
+                    class="file-open-button"
+                    type="button"
+                    [disabled]="openingFileId !== null || downloadingFileId !== null"
+                    (click)="openFile(file)"
+                  >
+                    {{ openingFileId === file.id ? 'Đang mở...' : 'Mở file' }}
+                  </button>
+                  <button
+                    class="file-download-button"
+                    type="button"
+                    [disabled]="openingFileId !== null || downloadingFileId !== null"
+                    (click)="downloadFile(file)"
+                  >
+                    {{ downloadingFileId === file.id ? 'Đang tải...' : 'Tải xuống' }}
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  }
+</section>

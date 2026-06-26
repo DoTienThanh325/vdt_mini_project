@@ -1,0 +1,229 @@
+<section class="detail-page">
+  <div class="page-heading">
+    <button class="back-button" type="button" (click)="backToList()">‹ Quay lại</button>
+    <div>
+      <h2>Chi tiết văn bản gửi đi</h2>
+      @if (document) {
+        <p>{{ document.documentCode }}</p>
+      }
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="state-message">
+      <span class="spinner"></span>
+      Đang tải chi tiết văn bản...
+    </div>
+  } @else if (errorMessage) {
+    <div class="state-message error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="loadDocument()">Thử lại</button>
+    </div>
+  } @else if (document) {
+    <div class="detail-content">
+      @if (actionMessage) {
+        <div class="action-feedback success">{{ actionMessage }}</div>
+      }
+      @if (actionErrorMessage) {
+        <div class="action-feedback error">{{ actionErrorMessage }}</div>
+      }
+
+      <section class="detail-section">
+        <h4>Thông tin văn bản</h4>
+        <dl class="detail-grid">
+          <div>
+            <dt>Mã văn bản</dt>
+            <dd>{{ document.documentCode }}</dd>
+          </div>
+          <div>
+            <dt>Loại văn bản</dt>
+            <dd>{{ documentTypeLabel(document.documentType) }}</dd>
+          </div>
+          <div>
+            <dt>Trạng thái</dt>
+            <dd>
+              <span class="status-badge" [class]="statusClass(document.status)">
+                {{ statusLabel(document.status) }}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>Ngày tạo</dt>
+            <dd>{{ formatDateTime(documentCreatedAt(document)) }}</dd>
+          </div>
+          <div class="full-row">
+            <dt>Tóm tắt</dt>
+            <dd>{{ document.summary || '—' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      @if (isLeader || isManager || isClerk) {
+        <section class="detail-section action-section">
+          <h4>Thao tác</h4>
+
+          @if (isManager) {
+            <div class="action-row">
+              <button
+                class="primary-action"
+                type="button"
+                [disabled]="!canApproveOrReject || actionLoading"
+                (click)="approveDocument()"
+              >
+                Phê duyệt
+              </button>
+              <button
+                class="danger-action"
+                type="button"
+                [disabled]="!canApproveOrReject || actionLoading"
+                (click)="rejectDocument()"
+              >
+                Từ chối
+              </button>
+            </div>
+          }
+
+          @if (isLeader) {
+            <div class="action-row">
+              <button class="primary-action" type="button" [disabled]="!canSign || actionLoading" (click)="signDocument()">
+                Ký số
+              </button>
+            </div>
+          }
+
+          @if (isClerk) {
+            <div class="action-row">
+              <button class="primary-action" type="button" [disabled]="actionLoading" (click)="checkSignature()">
+                Kiểm tra ký số
+              </button>
+            </div>
+
+            <div class="transfer-box">
+              <label for="receiverOrgId">
+                <span>Tổ chức nhận</span>
+                <select
+                  id="receiverOrgId"
+                  name="receiverOrgId"
+                  [(ngModel)]="selectedReceiverOrgId"
+                  [disabled]="loadingOrganizations || transferLoading"
+                >
+                  <option [ngValue]="0">
+                    {{ loadingOrganizations ? 'Đang tải tổ chức...' : 'Chọn tổ chức' }}
+                  </option>
+                  @for (organization of organizations; track organization.id) {
+                    <option [ngValue]="organization.id">
+                      {{ organization.orgName }} ({{ organization.orgCode }})
+                    </option>
+                  }
+                </select>
+              </label>
+              @if (organizationErrorMessage) {
+                <p class="file-error">{{ organizationErrorMessage }}</p>
+              }
+              <div class="org-pagination">
+                <span>Trang {{ orgPage + 1 }} / {{ orgTotalPages || 1 }}</span>
+                <div>
+                  <button
+                    type="button"
+                    [disabled]="orgFirst || loadingOrganizations"
+                    (click)="loadOrganizationsForTransfer(orgPage - 1)"
+                  >
+                    Trước
+                  </button>
+                  <button
+                    type="button"
+                    [disabled]="orgLast || loadingOrganizations || orgTotalPages === 0"
+                    (click)="loadOrganizationsForTransfer(orgPage + 1)"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </div>
+              <button
+                class="primary-action"
+                type="button"
+                [disabled]="transferLoading || loadingOrganizations"
+                (click)="transferDocument()"
+              >
+                {{ transferLoading ? 'Đang gửi...' : 'Gửi văn bản' }}
+              </button>
+            </div>
+          }
+        </section>
+      }
+
+      <section class="detail-section">
+        <h4>Files</h4>
+        @if (fileErrorMessage) {
+          <p class="file-error">{{ fileErrorMessage }}</p>
+        }
+        @if (documentFiles(document).length === 0) {
+          <p class="empty-detail">Chưa có file đính kèm.</p>
+        } @else {
+          <div class="file-list">
+            @for (file of documentFiles(document); track file.id) {
+              <article class="file-item">
+                <div class="file-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 3h7l4 4v14H7z"></path>
+                    <path d="M14 3v4h4M9 12h6M9 16h6"></path>
+                  </svg>
+                </div>
+                <div class="file-info">
+                  <strong>{{ file.originalFileName }}</strong>
+                  <span>{{ formatFileSize(file.fileSize) }}</span>
+                </div>
+                <div class="file-actions">
+                  <button
+                    class="file-open-button"
+                    type="button"
+                    [disabled]="openingFileId !== null || downloadingFileId !== null"
+                    (click)="openFile(file)"
+                  >
+                    {{ openingFileId === file.id ? 'Đang mở...' : 'Mở file' }}
+                  </button>
+                  <button
+                    class="file-download-button"
+                    type="button"
+                    [disabled]="openingFileId !== null || downloadingFileId !== null"
+                    (click)="downloadFile(file)"
+                  >
+                    {{ downloadingFileId === file.id ? 'Đang tải...' : 'Tải xuống' }}
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="detail-section">
+        <h4>Thông tin gửi</h4>
+        @if (documentTransfers(document).length === 0) {
+          <p class="empty-detail">Văn bản chưa gửi.</p>
+        } @else {
+          <div class="detail-table-wrapper">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Phản hồi</th>
+                  <th>Trạng thái</th>
+                  <th>Đơn vị nhận</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (transfer of documentTransfers(document); track transfer.receiverOrgCode + transfer.status) {
+                  <tr>
+                    <td>{{ transfer.responseContent || '—' }}</td>
+                    <td>{{ transferStatusLabel(transfer.status) }}</td>
+                    <td>{{ transfer.receiverOrgName || transfer.receiverOrgCode }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</section>

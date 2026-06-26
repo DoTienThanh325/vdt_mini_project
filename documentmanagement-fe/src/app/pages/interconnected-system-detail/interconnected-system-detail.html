@@ -1,0 +1,100 @@
+<div class="detail-page">
+  <button class="back-button" type="button" (click)="goBack()">‹ Quay lại danh sách hệ thống</button>
+
+  @if (loading) {
+    <section class="detail-card state-card">
+      <span class="spinner"></span>
+      Đang tải thông tin hệ thống...
+    </section>
+  } @else if (errorMessage && !system) {
+    <section class="detail-card state-card error">
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="reloadSystem()">Thử lại</button>
+    </section>
+  } @else if (system) {
+    <div class="page-heading">
+      <div>
+        <p>{{ system.systemCode }}</p>
+        <h2>{{ system.systemName }}</h2>
+      </div>
+    </div>
+
+    @if (successMessage) {
+      <div class="message success">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="message error">{{ errorMessage }}</div>
+    }
+
+    <section class="detail-card">
+      <div class="card-heading">
+        <h3>Thông tin hệ thống liên thông</h3>
+        <span class="status-badge" [class]="statusClass(system.status)">
+          {{ system.status }}
+        </span>
+      </div>
+
+      <div class="information-grid">
+        <div class="field">
+          <span>Mã hệ thống</span>
+          <strong>{{ system.systemCode }}</strong>
+        </div>
+
+        <div class="field">
+          <span>Tên hệ thống</span>
+          <strong>{{ system.systemName }}</strong>
+        </div>
+
+        <div class="field endpoint-field">
+          <span>Endpoint URL</span>
+          @if (editingEndpoint) {
+            <input id="endpointUrl" type="url" [(ngModel)]="endpointUrl" />
+          } @else {
+            <strong>{{ system.endpointUrl }}</strong>
+          }
+        </div>
+
+        <div class="field">
+          <span>Ngày tạo</span>
+          <strong>{{ formatDateTime(system.createdAt) }}</strong>
+        </div>
+
+        <div class="field">
+          <span>Cập nhật gần nhất</span>
+          <strong>{{ formatDateTime(system.updatedAt) }}</strong>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <div class="endpoint-actions">
+          @if (editingEndpoint) {
+            <button
+              class="cancel-button"
+              type="button"
+              [disabled]="savingEndpoint"
+              (click)="cancelEndpointEdit()"
+            >
+              Hủy
+            </button>
+            <button
+              class="save-button"
+              type="button"
+              [disabled]="savingEndpoint"
+              (click)="saveEndpoint()"
+            >
+              {{ savingEndpoint ? 'Đang lưu...' : 'Lưu endpoint' }}
+            </button>
+          } @else {
+            <button
+              class="edit-endpoint-button"
+              type="button"
+              (click)="startEndpointEdit()"
+            >
+              Chỉnh sửa endpoint
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

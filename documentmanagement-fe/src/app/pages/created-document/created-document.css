@@ -1,0 +1,228 @@
+@import "../outgoing-document/outgoing-document.css";
+
+.create-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #155eef;
+  border-radius: 8px;
+  background: #155eef;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.create-button:hover {
+  background: #004eeb;
+}
+
+.list-feedback {
+  margin: 16px 24px 0;
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.list-feedback.success {
+  border: 1px solid #abefc6;
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.list-feedback.error {
+  border: 1px solid #fecdca;
+  background: #fffbfa;
+  color: #b42318;
+}
+
+.delete-document-button {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #fda29b;
+  border-radius: 8px;
+  background: #fff;
+  color: #b42318;
+  cursor: pointer;
+}
+
+.delete-document-button:hover:not(:disabled) {
+  background: #fffbfa;
+}
+
+.delete-document-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.delete-document-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.create-document-modal {
+  width: min(720px, 100%);
+}
+
+.create-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px 24px 24px;
+}
+
+.create-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.create-form label span {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.create-form select,
+.create-form textarea {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #fff;
+  color: #101828;
+  font: inherit;
+  font-size: 14px;
+}
+
+.create-form select {
+  min-height: 40px;
+  padding: 0 11px;
+}
+
+.create-form textarea {
+  min-height: 120px;
+  resize: vertical;
+  padding: 10px 11px;
+}
+
+.file-upload input {
+  padding: 10px;
+  border: 1px dashed #98a2b3;
+  border-radius: 8px;
+  background: #fcfcfd;
+}
+
+.file-upload small {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.selected-file-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selected-file-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  background: #fcfcfd;
+}
+
+.selected-file-list li div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.selected-file-list li span {
+  overflow: hidden;
+  min-width: 0;
+  color: #101828;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-file-list li small {
+  flex: 0 0 auto;
+}
+
+.remove-file-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #fda29b;
+  border-radius: 8px;
+  background: #fff;
+  color: #b42318;
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.remove-file-button:hover:not(:disabled) {
+  background: #fffbfa;
+}
+
+.remove-file-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.secondary-action {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #fff;
+  color: #344054;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.secondary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 760px) {
+  .create-button,
+  .modal-actions,
+  .modal-actions button {
+    width: 100%;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+}
