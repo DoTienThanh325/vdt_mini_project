@@ -69,7 +69,7 @@ public class Document {
 	@Builder.Default
 	@OneToMany(mappedBy = "document")
 	private List<DocumentFile> files = new ArrayList<>();
-	
+
 	@OneToOne(mappedBy = "document")
 	private DocumentSignature signature;
 
@@ -81,11 +81,6 @@ public class Document {
 		CREATED,
 		APPROVED,
 		SIGNED,
-		SENT,
-		RECEIVED,
-		RESPONDED,
-		REJECTED,
-		ARCHIVED,
-		DELETED
+		REJECTED
 	}
 }

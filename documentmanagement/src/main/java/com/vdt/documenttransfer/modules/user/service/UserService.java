@@ -2,12 +2,13 @@ package com.vdt.documenttransfer.modules.user.service;
 
 import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.modules.user.dto.UserAssignmentUpdateRequest;
+import com.vdt.documenttransfer.modules.user.dto.UserDetailResponse;
 import com.vdt.documenttransfer.modules.user.dto.UserResponse;
 
 public interface UserService {
     UserResponse updateUserAssignment(Integer userId, UserAssignmentUpdateRequest request);
 
-    UserResponse findByUsername(String username);
+    UserDetailResponse findById(Integer userId);
 
     UserResponse updateUserStatus(Integer userId);
 

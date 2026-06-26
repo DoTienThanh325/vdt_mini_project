@@ -17,4 +17,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Inte
     boolean existsByPhone(String orgPhone);
 
     Page<Organization> findAll(Pageable pageable);
+
+    Page<Organization> findByStatus(Organization.Status status, Pageable pageable);
 }

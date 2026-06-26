@@ -7,7 +7,10 @@ import com.vdt.documenttransfer.modules.document.dto.NewDocumentRequest;
 import com.vdt.documenttransfer.modules.document.service.DocumentService;
 import com.vdt.documenttransfer.modules.user.entity.User;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -85,10 +89,10 @@ public class DocumentController {
         }
     }
 
-    @GetMapping("/status/{status}")
-    public ResponseEntity<?> getByStatusAndSenderOrg(@AuthenticationPrincipal(expression = "user") User user,
+    @PostMapping("/search")
+    public ResponseEntity<?> getByStatusAndTypeAndSenderOrg(@AuthenticationPrincipal(expression = "user") User user,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
-            @PathVariable String status) {
+            @RequestBody Map<String, String> request) {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
@@ -98,7 +102,7 @@ public class DocumentController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
             }
             Integer orgId = user.getOrganization().getId();
-            return ResponseEntity.ok(documentService.findByStatusAndSenderOrg(status, orgId, page, size));
+            return ResponseEntity.ok(documentService.findByStatusAndTypeAndSenderOrg(request, orgId, page, size));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());
@@ -161,5 +165,23 @@ public class DocumentController {
                     .body("Error: " + e.getMessage());
         }
     }
+    
+    @DeleteMapping("/delete/{documentId}")
+    @Transactional
+    public ResponseEntity<?> deleteById(@AuthenticationPrincipal(expression = "user") User user, @PathVariable Integer documentId) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
 
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+            documentService.deleteByDocument_Id(documentId);
+            return ResponseEntity.ok("Xóa văn bản, tài liệu thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
 }

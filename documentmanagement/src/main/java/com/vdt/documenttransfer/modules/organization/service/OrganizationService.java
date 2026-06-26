@@ -10,9 +10,13 @@ import com.vdt.documenttransfer.modules.user.entity.User;
 public interface OrganizationService {
     OrgResponse createNew(NewOrgRequest request, User user);
 
-    OrgResponse accessNewOrg(Integer Id, User user);
+    OrgResponse accessNewOrInactiveOrg(Integer Id, User user);
 
     OrgResponse updateOrg(UpdateOrgRequest request, Integer id);
 
     PageResponse<OrgResponse> findAll(int page, int size);
+
+    PageResponse<OrgResponse> findByStatus(int page, int size, String status);
+
+    OrgResponse softDeleteOrg(Integer id);
 }

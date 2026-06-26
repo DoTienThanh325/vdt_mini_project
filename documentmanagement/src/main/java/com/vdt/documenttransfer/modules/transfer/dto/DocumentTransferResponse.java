@@ -10,6 +10,7 @@ public class DocumentTransferResponse {
     private String status;
     private String senderUsername;
     private String receiverOrgCode;
+    private String receiverOrgName;
     private String receiverUsername;
     private String documentCode;
 }

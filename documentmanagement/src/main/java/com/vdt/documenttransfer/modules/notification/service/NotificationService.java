@@ -8,4 +8,6 @@ public interface NotificationService {
     NotificationRedisDto createNotification(Integer userId, String title, String content);
 
     List<Object> getTodayNotifications(Integer userId);
+
+    NotificationRedisDto updateNotificationStatus(Integer userId, String notificationId, Boolean isRead);
 }

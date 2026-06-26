@@ -13,7 +13,6 @@ public class InterconnectedSystemResponse implements Serializable {
     private String systemCode;
     private String systemName;
     private String endpointUrl;
-    private String apiKey;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

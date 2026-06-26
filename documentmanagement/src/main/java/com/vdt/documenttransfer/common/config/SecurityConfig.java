@@ -1,5 +1,7 @@
 package com.vdt.documenttransfer.common.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.vdt.documenttransfer.common.security.CustomUserDetailsService;
 import com.vdt.documenttransfer.common.security.JwtAuthenticationFilter;
@@ -47,6 +52,7 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 return http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(csrf -> csrf.disable())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -93,8 +99,9 @@ public class SecurityConfig {
                                                 .hasRole("CLERK")
 
                                                 .requestMatchers(
-                                                                "/api/documents/status/*")
-                                                .hasAnyRole("MANAGER", "LEADER", "CLERK")
+                                                                "/api/documents/status/*",
+                                                                "/api/documents/receive/status/*")
+                                                .hasAnyRole("MANAGER", "LEADER", "CLERK", "STAFF")
 
                                                 .anyRequest().authenticated())
                                 .authenticationProvider(authenticationProvider())
@@ -102,5 +109,20 @@ public class SecurityConfig {
                                                 jwtAuthenticationFilter,
                                                 UsernamePasswordAuthenticationFilter.class)
                                 .build();
+        }
+
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+
+                configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowCredentials(true);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+
+                return source;
         }
 }

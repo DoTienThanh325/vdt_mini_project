@@ -37,15 +37,15 @@ public class UserController {
         }
     }
 
-    @GetMapping("/")
-    public ResponseEntity<?> findUserByUsername(@RequestParam(value = "username", required = true) String username,
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> findUserById(@PathVariable Integer userId,
             @AuthenticationPrincipal(expression = "user") User user) {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
             }
 
-            return ResponseEntity.ok(userService.findByUsername(username));
+            return ResponseEntity.ok(userService.findById(userId));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());

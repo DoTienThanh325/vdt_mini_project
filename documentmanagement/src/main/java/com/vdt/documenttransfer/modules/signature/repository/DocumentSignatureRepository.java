@@ -8,4 +8,6 @@ import com.vdt.documenttransfer.modules.signature.entity.DocumentSignature;
 
 public interface DocumentSignatureRepository extends JpaRepository<DocumentSignature, Integer> {
     Optional<DocumentSignature> findByDocumentId(Integer documentId);
+
+    void deleteByDocument_Id(Integer documentId);
 }

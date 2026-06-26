@@ -36,7 +36,8 @@ public class EntityToDTO {
                     .status(tranfer.getStatus().name())
                     .senderUsername(tranfer.getSender().getUsername())
                     .receiverOrgCode(tranfer.getReceiverOrganization().getOrgCode())
-                    .receiverUsername(tranfer.getReceiver().getUsername())
+                    .receiverOrgName(tranfer.getReceiverOrganization().getOrgName())
+                    .receiverUsername(tranfer.getReceiver() != null ? tranfer.getReceiver().getUsername() : null)
                     .build())
                     .toList();
         }
@@ -60,6 +61,7 @@ public class EntityToDTO {
                 .id(document.getId())
                 .documentType(document.getDocumentType())
                 .documentCode(document.getDocumentCode())
+                .senderOrgName(document.getSenderOrganization().getOrgName())
                 .summary(document.getSummary())
                 .status(document.getStatus().name())
                 .creatdAt(document.getCreatedAt())

@@ -17,6 +17,7 @@ public class DocumentResponse {
     private Integer id;
     private String documentType;
     private String documentCode;
+    private String senderOrgName;
     private String summary;
     private String status;
     private List<DocumentFileResponse> files;

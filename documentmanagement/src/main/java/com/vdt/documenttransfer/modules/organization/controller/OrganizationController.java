@@ -41,6 +41,22 @@ public class OrganizationController {
         }
     }
 
+    @GetMapping("/{status}")
+    public ResponseEntity<?> getAllByStatus(@AuthenticationPrincipal(expression = "user") User user,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @PathVariable String status) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            return ResponseEntity.ok(organizationService.findByStatus(page, size, status));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+    
+
     @PostMapping("/new")
     public ResponseEntity<?> signNewOrg(@RequestBody NewOrgRequest request,
             @AuthenticationPrincipal(expression = "user") User user) {
@@ -80,7 +96,7 @@ public class OrganizationController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<?> activeOrg(@PathVariable("id") Integer id,
+    public ResponseEntity<?> activeOrInactiveOrg(@PathVariable("id") Integer id,
             @AuthenticationPrincipal(expression = "user") User user) {
         try {
             if (user == null) {
@@ -91,7 +107,25 @@ public class OrganizationController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
             }
 
-            return ResponseEntity.ok(organizationService.accessNewOrg(id, user));
+            return ResponseEntity.ok(organizationService.accessNewOrInactiveOrg(id, user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/softDelete")
+    public ResponseEntity<?> softDeleteOrg(@PathVariable Integer id, @AuthenticationPrincipal(expression = "user") User user) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }
+
+            return ResponseEntity.ok(organizationService.softDeleteOrg(id));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: " + e.getMessage());

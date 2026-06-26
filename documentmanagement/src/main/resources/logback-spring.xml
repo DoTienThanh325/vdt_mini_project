@@ -32,10 +32,6 @@
                     <fieldName>level</fieldName>
                 </logLevel>
 
-                <loggerName>
-                    <fieldName>logger</fieldName>
-                </loggerName>
-
                 <threadName>
                     <fieldName>thread</fieldName>
                 </threadName>
@@ -44,7 +40,9 @@
                     <fieldName>message</fieldName>
                 </message>
 
-                <mdc/>
+                <mdc>
+                    <excludeMdcKeyName>service_logger</excludeMdcKeyName>
+                </mdc>
 
                 <stackTrace>
                     <fieldName>stack_trace</fieldName>
@@ -53,6 +51,7 @@
                 <pattern>
                     <pattern>
                         {
+                            "logger": "%mdc{service_logger}",
                             "app_name": "${APP_NAME}"
                         }
                     </pattern>
@@ -61,9 +60,13 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <logger name="SERVICE_FILE" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE_JSON"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
     </root>
 
 </configuration>

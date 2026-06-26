@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.vdt.documenttransfer.common.logging.AppLogger;
 import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.document.repository.DocumentRepository;
 import com.vdt.documenttransfer.modules.documentfile.dto.DocumentFileResponse;
@@ -26,108 +25,94 @@ public class DocumentFileServiceImpl implements DocumentFileService {
 
     private final DocumentRepository documentRepository;
     private final DocumentFileRepository documentFileRepository;
-    private final AppLogger appLogger;
-
     @Value("${file.upload-dir}")
     private String uploadDir;
 
     @Override
     public List<DocumentFileResponse> uploadFiles(Integer documentId, MultipartFile[] files, User user) {
-        String documentCode = String.valueOf(documentId);
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document không tồn tại"));
+        if (!user.getId().equals(document.getCreatedBy().getId())) {
+            throw new RuntimeException("Bạn không có quyền upload file của tài liệu, văn bản này");
+        }
+
+        if (files == null || files.length == 0) {
+            throw new RuntimeException("Vui lòng chọn ít nhất một file");
+        }
+
+        List<DocumentFileResponse> responses = new ArrayList<>();
+
         try {
-            Document document = documentRepository.findById(documentId)
-                    .orElseThrow(() -> new RuntimeException("Document không tồn tại"));
-            documentCode = document.getDocumentCode();
+            String folderName = sanitizeFolderName(document.getDocumentCode());
 
-            if (!user.getId().equals(document.getCreatedBy().getId())) {
-                throw new RuntimeException("Bạn không có quyền upload file của tài liệu, văn bản này");
+            Path documentUploadPath = Paths.get(uploadDir, folderName)
+                    .toAbsolutePath()
+                    .normalize();
+
+            if (!Files.exists(documentUploadPath)) {
+                Files.createDirectories(documentUploadPath);
             }
 
-            if (files == null || files.length == 0) {
-                throw new RuntimeException("Vui lòng chọn ít nhất một file");
-            }
+            long currentFileCount = documentFileRepository.countByDocumentId(documentId);
+            int fileIndex = (int) currentFileCount + 1;
 
-            List<DocumentFileResponse> responses = new ArrayList<>();
-
-            try {
-                String folderName = sanitizeFolderName(document.getDocumentCode());
-
-                Path documentUploadPath = Paths.get(uploadDir, folderName)
-                        .toAbsolutePath()
-                        .normalize();
-
-                if (!Files.exists(documentUploadPath)) {
-                    Files.createDirectories(documentUploadPath);
+            for (MultipartFile file : files) {
+                if (file.isEmpty()) {
+                    continue;
                 }
 
-                long currentFileCount = documentFileRepository.countByDocumentId(documentId);
-                int fileIndex = (int) currentFileCount + 1;
+                validateFile(file);
 
-                for (MultipartFile file : files) {
-                    if (file.isEmpty()) {
-                        continue;
-                    }
+                String originalFileName = file.getOriginalFilename();
 
-                    validateFile(file);
+                String extension = getFileExtension(originalFileName);
 
-                    String originalFileName = file.getOriginalFilename();
+                String storedFileName = folderName
+                        + "-"
+                        + String.format("%04d", fileIndex)
+                        + extension;
 
-                    String extension = getFileExtension(originalFileName);
+                fileIndex++;
 
-                    String storedFileName = folderName
-                            + "-"
-                            + String.format("%04d", fileIndex)
-                            + extension;
+                Path targetPath = documentUploadPath.resolve(storedFileName);
 
-                    fileIndex++;
+                Files.copy(
+                        file.getInputStream(),
+                        targetPath,
+                        StandardCopyOption.REPLACE_EXISTING);
 
-                    Path targetPath = documentUploadPath.resolve(storedFileName);
+                String filePath = Paths.get(uploadDir, folderName, storedFileName)
+                        .toString()
+                        .replace("\\", "/");
 
-                    Files.copy(
-                            file.getInputStream(),
-                            targetPath,
-                            StandardCopyOption.REPLACE_EXISTING);
+                DocumentFile documentFile = DocumentFile.builder()
+                        .document(document)
+                        .originalFileName(originalFileName)
+                        .storedFileName(storedFileName)
+                        .filePath(filePath)
+                        .fileType(file.getContentType())
+                        .fileSize(file.getSize())
+                        .uploadedAt(LocalDateTime.now())
+                        .build();
 
-                    String filePath = Paths.get(uploadDir, folderName, storedFileName)
-                            .toString()
-                            .replace("\\", "/");
+                DocumentFile savedFile = documentFileRepository.save(documentFile);
 
-                    DocumentFile documentFile = DocumentFile.builder()
-                            .document(document)
-                            .originalFileName(originalFileName)
-                            .storedFileName(storedFileName)
-                            .filePath(filePath)
-                            .fileType(file.getContentType())
-                            .fileSize(file.getSize())
-                            .uploadedAt(LocalDateTime.now())
-                            .build();
-
-                    DocumentFile savedFile = documentFileRepository.save(documentFile);
-
-                    responses.add(DocumentFileResponse.builder()
-                            .id(savedFile.getId())
-                            .originalFileName(savedFile.getOriginalFileName())
-                            .storedFileName(savedFile.getStoredFileName())
-                            .filePath(savedFile.getFilePath())
-                            .fileType(savedFile.getFileType())
-                            .fileSize(savedFile.getFileSize())
-                            .documentCode(document.getDocumentCode())
-                            .documentSummary(document.getSummary())
-                            .build());
-                }
-
-                appLogger.infoDocument("UPLOAD_DOCUMENT_FILE", user.getId(), document.getDocumentCode(),
-                        "Upload document files successfully, file_count=" + responses.size());
-
-                return responses;
-
-            } catch (IOException e) {
-                throw new RuntimeException("Upload file thất bại: " + e.getMessage(), e);
+                responses.add(DocumentFileResponse.builder()
+                        .id(savedFile.getId())
+                        .originalFileName(savedFile.getOriginalFileName())
+                        .storedFileName(savedFile.getStoredFileName())
+                        .filePath(savedFile.getFilePath())
+                        .fileType(savedFile.getFileType())
+                        .fileSize(savedFile.getFileSize())
+                        .documentCode(document.getDocumentCode())
+                        .documentSummary(document.getSummary())
+                        .build());
             }
-        } catch (RuntimeException e) {
-            appLogger.errorDocument("UPLOAD_DOCUMENT_FILE", user != null ? user.getId() : null, documentCode,
-                    "Upload document files failed: " + e.getMessage(), e);
-            throw e;
+
+            return responses;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Upload file thất bại: " + e.getMessage(), e);
         }
     }
 
@@ -150,7 +135,7 @@ public class DocumentFileServiceImpl implements DocumentFileService {
     }
 
     private void validateFile(MultipartFile file) {
-        long maxSize = 10 * 1024 * 1024;
+        long maxSize = 50 * 1024 * 1024;
 
         if (file.getSize() > maxSize) {
             throw new RuntimeException("File vượt quá dung lượng cho phép: " + file.getOriginalFilename());

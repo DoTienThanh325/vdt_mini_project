@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import com.vdt.documenttransfer.common.logging.AppLogger;
 import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.modules.interconnectedsystem.entity.InterconnectedSystem;
 import com.vdt.documenttransfer.modules.interconnectedsystem.repository.InterconnectedSystemRepository;
@@ -27,82 +26,71 @@ public class OrganizationServiceImpl implements OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final InterconnectedSystemRepository interconnectedSystemRepository;
     private final UserRepository userRepository;
-    private final AppLogger appLogger;
 
     @Override
     public OrgResponse createNew(NewOrgRequest request, User user) {
-        try {
-            String orgCode = request.getOrgCode();
-            String orgEmail = request.getEmail();
-            String phone = request.getPhone();
-            Integer systemId = request.getSystemId();
+        String orgCode = request.getOrgCode();
+        String orgEmail = request.getEmail();
+        String phone = request.getPhone();
+        Integer systemId = request.getSystemId();
 
-            if (organizationRepository.existsByOrgCode(orgCode)) {
-                throw new RuntimeException("Mã đơn vị đã được sử dụng");
-            }
-
-            if (organizationRepository.existsByEmail(orgEmail)) {
-                throw new RuntimeException("Email đơn vị đã được sử dụng");
-            }
-
-            if (organizationRepository.existsByPhone(phone)) {
-                throw new RuntimeException("Số điện thoại đơn vị đã được sử dụng");
-            }
-
-            InterconnectedSystem interSystem = interconnectedSystemRepository.findById(systemId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hệ thống liên thông"));
-
-            LocalDateTime now = LocalDateTime.now();
-
-            Organization organization = Organization.builder()
-                    .orgCode(orgCode)
-                    .orgName(request.getOrgName())
-                    .address(request.getAddress())
-                    .email(request.getEmail())
-                    .phone(request.getPhone())
-                    .status(Organization.Status.INACTIVE)
-                    .system(interSystem)
-                    .createdAt(now)
-                    .updatedAt(null)
-                    .build();
-
-            Organization savedOrganization = organizationRepository.save(organization);
-
-            user.setOrganization(savedOrganization);
-            user.setUpdatedAt(now);
-            userRepository.save(user);
-
-            appLogger.infoAction("CREATE_ORGANIZATION", user.getId(), "ORGANIZATION",
-                    savedOrganization.getOrgCode(), "Create organization successfully");
-
-            return entityToResponse(savedOrganization, "Tạo org thành công");
-        } catch (RuntimeException e) {
-            appLogger.errorAction("CREATE_ORGANIZATION", user != null ? user.getId() : null, "ORGANIZATION",
-                    request != null ? request.getOrgCode() : null, "Create organization failed: " + e.getMessage(), e);
-            throw e;
+        if (organizationRepository.existsByOrgCode(orgCode)) {
+            throw new RuntimeException("Mã đơn vị đã được sử dụng");
         }
+
+        if (organizationRepository.existsByEmail(orgEmail)) {
+            throw new RuntimeException("Email đơn vị đã được sử dụng");
+        }
+
+        if (organizationRepository.existsByPhone(phone)) {
+            throw new RuntimeException("Số điện thoại đơn vị đã được sử dụng");
+        }
+
+        InterconnectedSystem interSystem = interconnectedSystemRepository.findById(systemId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hệ thống liên thông"));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        Organization organization = Organization.builder()
+                .orgCode(orgCode)
+                .orgName(request.getOrgName())
+                .address(request.getAddress())
+                .email(request.getEmail())
+                .phone(request.getPhone())
+                .status(Organization.Status.INACTIVE)
+                .system(interSystem)
+                .createdAt(now)
+                .updatedAt(null)
+                .build();
+
+        Organization savedOrganization = organizationRepository.save(organization);
+
+        user.setOrganization(savedOrganization);
+        user.setUpdatedAt(now);
+        userRepository.save(user);
+
+        return entityToResponse(savedOrganization, "Tạo org thành công");
     }
 
     @Override
-    public OrgResponse accessNewOrg(Integer Id, User user) {
-        try {
-            Organization organization = organizationRepository.findById(Id)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
-            LocalDateTime now = LocalDateTime.now();
+    public OrgResponse accessNewOrInactiveOrg(Integer Id, User user) {
+        Organization organization = organizationRepository.findById(Id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
+        String message = "";
+
+        if (organization.getStatus().name().equals("ACTIVE")) {
+            organization.setStatus(Organization.Status.INACTIVE);
+            message = "Vô hiệu hóa đơn vị liên thông thành công";
+        } else {
             organization.setStatus(Organization.Status.ACTIVE);
-            organization.setUpdatedAt(now);
-
-            Organization savedOrg = organizationRepository.save(organization);
-
-            appLogger.infoAction("APPROVE_ORGANIZATION", user != null ? user.getId() : null, "ORGANIZATION",
-                    savedOrg.getOrgCode(), "Approve organization successfully");
-
-            return entityToResponse(savedOrg, "Duyệt đơn vị liên thông thành công");
-        } catch (RuntimeException e) {
-            appLogger.errorAction("APPROVE_ORGANIZATION", user != null ? user.getId() : null, "ORGANIZATION",
-                    String.valueOf(Id), "Approve organization failed: " + e.getMessage(), e);
-            throw e;
+            message = "Duyệt đơn vị liên thông thành công";
         }
+        LocalDateTime now = LocalDateTime.now();
+        organization.setUpdatedAt(now);
+
+        Organization savedOrg = organizationRepository.save(organization);
+
+        return entityToResponse(savedOrg, message);
     }
 
     @Override
@@ -114,6 +102,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         String orgCode = request.getOrgCode();
         String orgAddress = request.getAddress();
         String email = request.getEmail();
+        String phone = request.getPhone();
         Integer systemId = request.getSystemId();
 
         if (orgCode != null && !orgCode.equals("")) {
@@ -132,6 +121,13 @@ public class OrganizationServiceImpl implements OrganizationService {
                 throw new RuntimeException("Email đơn vị đã được sử dụng");
             }
             organization.setEmail(email);
+        }
+
+        if (phone != null && !phone.equals("")) {
+            if (organizationRepository.existsByPhone(phone)) {
+                throw new RuntimeException("Số điện thoại đơn vị đã được sử dụng");
+            }
+            organization.setPhone(phone);
         }
 
         if (systemId != null) {
@@ -182,5 +178,41 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .first(orgPage.isFirst())
                 .last(orgPage.isLast())
                 .build();
+    }
+
+    @Override
+    public PageResponse<OrgResponse> findByStatus(int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Organization.Status orgStatus = Organization.Status.valueOf(status);
+
+        Page<Organization> orgPage = organizationRepository.findByStatus(orgStatus, pageable);
+
+        List<OrgResponse> content = orgPage.getContent().stream()
+                .map(org -> entityToResponse(org, null))
+                .toList();
+
+        return PageResponse.<OrgResponse>builder()
+                .content(content)
+                .page(orgPage.getNumber())
+                .size(orgPage.getSize())
+                .totalElements(orgPage.getTotalElements())
+                .totalPages(orgPage.getTotalPages())
+                .first(orgPage.isFirst())
+                .last(orgPage.isLast())
+                .build();
+    }
+
+    @Override
+    public OrgResponse softDeleteOrg(Integer id) {
+        Organization organization = organizationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
+
+        LocalDateTime now = LocalDateTime.now();
+        organization.setStatus(Organization.Status.DELETED);
+        organization.setUpdatedAt(now);
+
+        Organization savedOrg = organizationRepository.save(organization);
+
+        return entityToResponse(savedOrg, "Xoá đơn vị liên thông thành công");
     }
 }

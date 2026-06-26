@@ -1,7 +1,6 @@
 package com.vdt.documenttransfer.modules.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vdt.documenttransfer.modules.auditlog.entity.AuditLog;
 import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.organization.entity.Organization;
 import com.vdt.documenttransfer.modules.role.entity.Role;
@@ -96,11 +95,6 @@ public class User implements Serializable {
 	@Builder.Default
 	@OneToMany(mappedBy = "receiver")
 	private Set<DocumentTransfer> receivedTransfers = new HashSet<>();
-
-	@JsonIgnore
-	@Builder.Default
-	@OneToMany(mappedBy = "actor")
-	private Set<AuditLog> auditLogs = new HashSet<>();
 
 	public enum Status {
 		ACTIVE,

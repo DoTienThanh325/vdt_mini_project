@@ -7,6 +7,5 @@ import lombok.Setter;
 @Setter
 public class UpdateInterconnectedSystemRequest {
     private String endpointUrl;
-    private String apiKey;
     private String status;
 }

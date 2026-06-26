@@ -27,4 +27,10 @@ public interface DocumentRepository extends JpaRepository<Document, Integer> {
     Page<Document> findBySenderOrganization_Id(Integer senderOrgId, Pageable pageable);
 
     Page<Document> findByCreatedBy_Id(Integer staffId, Pageable pageable);
+
+    Page<Document> findByDocumentTypeAndSenderOrganization_Id(String type, Integer orgId, Pageable pageable);
+
+    Page<Document> findByDocumentTypeAndStatusAndSenderOrganization_Id(String type, Document.Status status, Integer orgId, Pageable pageable);
+
+    void deleteById(Integer id);
 }

@@ -7,11 +7,13 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.vdt.documenttransfer.common.logging.AppLogger;
+import com.vdt.documenttransfer.common.response.PageResponse;
 import com.vdt.documenttransfer.common.util.DocumentSign;
+import com.vdt.documenttransfer.modules.document.dto.DocumentResponse;
 import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.document.repository.DocumentRepository;
 import com.vdt.documenttransfer.modules.documentfile.entity.DocumentFile;
@@ -41,83 +43,71 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
     private final DocumentTransferRepository documentTransferRepository;
     private final InterconnectedSystemRepository interconnectedSystemRepository;
     private final NotificationService notificationService;
-    private final AppLogger appLogger;
 
     @Override
     @Transactional
     public DocumentTransferResponse transferDocument(Integer documentId, Integer orgId, User clerk,
             String authorizationHeader) {
-        String documentCode = String.valueOf(documentId);
         DocumentTransfer savedTransfer = null;
-        try {
-            Document document = documentRepository.findById(documentId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
-            documentCode = document.getDocumentCode();
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
+        Organization receiverOrg = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
 
-            Organization receiverOrg = organizationRepository.findById(orgId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
+        InterconnectedSystem receiverSystem = receiverOrg.getSystem();
 
-            InterconnectedSystem receiverSystem = receiverOrg.getSystem();
-
-            if (!clerk.getOrganization().getId().equals(document.getSenderOrganization().getId())) {
-                throw new RuntimeException("Tài liệu không thuộc đơn vị của bạn");
-            }
-
-            if (document.getSignature() == null) {
-                throw new RuntimeException("Tài liệu chưa được ký");
-            }
-
-            if (!document.getSignature().getStatus().name().equals("VALID")) {
-                throw new RuntimeException("Vui lòng xác minh chữ ký trước khi gửi");
-            }
-
-            if (!receiverSystem.getStatus().name().equals("ACTIVE")) {
-                throw new RuntimeException("Hệ thống nhận không hoạt động");
-            }
-
-            DocumentSignature signature = document.getSignature();
-
-            DocumentTransfer transfer = DocumentTransfer.builder()
-                    .document(document)
-                    .sender(clerk)
-                    .status(DocumentTransfer.Status.PENDING)
-                    .sentAt(LocalDateTime.now())
-                    .receiverOrganization(receiverOrg)
-                    .build();
-            savedTransfer = documentTransferRepository.save(transfer);
-
-            try {
-                ExternalDocumentPayload payload = buildPayload(document, signature, receiverOrg, savedTransfer);
-                externalDocumentClient.sendDocument(receiverSystem, payload, authorizationHeader);
-
-                savedTransfer.setStatus(DocumentTransfer.Status.SENT);
-                documentTransferRepository.save(savedTransfer);
-                documentRepository.save(document);
-
-            } catch (Exception e) {
-                savedTransfer.setStatus(DocumentTransfer.Status.FAILED);
-                documentTransferRepository.save(savedTransfer);
-                throw new RuntimeException("Gửi tài liệu thất bại " + e.getMessage(), e);
-            }
-
-            notificationService.createNotification(document.getCreatedBy().getId(), "Tài liệu, văn bản đã được gửi đi",
-                    "Tài liệu, văn bản " + document.getDocumentCode() + " - " + document.getSummary()
-                            + " đã được gửi đến " + receiverOrg.getOrgName());
-
-            appLogger.infoDocument("SEND_DOCUMENT", clerk.getId(), document.getDocumentCode(),
-                    "Send document successfully");
-
-            return DocumentTransferResponse.builder()
-                    .status(savedTransfer.getStatus().name())
-                    .senderUsername(savedTransfer.getSender().getUsername())
-                    .receiverOrgCode(receiverOrg.getOrgCode())
-                    .documentCode(savedTransfer.getDocument().getDocumentCode())
-                    .build();
-        } catch (RuntimeException e) {
-            appLogger.errorDocument("SEND_DOCUMENT", clerk != null ? clerk.getId() : null, documentCode,
-                    "Send document failed: " + e.getMessage(), e);
-            throw e;
+        if (!clerk.getOrganization().getId().equals(document.getSenderOrganization().getId())) {
+            throw new RuntimeException("Tài liệu không thuộc đơn vị của bạn");
         }
+
+        if (document.getSignature() == null) {
+            throw new RuntimeException("Tài liệu chưa được ký");
+        }
+
+        if (!document.getSignature().getStatus().name().equals("VALID")) {
+            throw new RuntimeException("Vui lòng xác minh chữ ký trước khi gửi");
+        }
+
+        if (!receiverSystem.getStatus().name().equals("ACTIVE")) {
+            throw new RuntimeException("Hệ thống nhận không hoạt động");
+        }
+
+        DocumentSignature signature = document.getSignature();
+
+        DocumentTransfer transfer = DocumentTransfer.builder()
+                .document(document)
+                .sender(clerk)
+                .status(DocumentTransfer.Status.PENDING)
+                .sentAt(LocalDateTime.now())
+                .receiverOrganization(receiverOrg)
+                .build();
+        savedTransfer = documentTransferRepository.save(transfer);
+
+        try {
+            ExternalDocumentPayload payload = buildPayload(document, signature, receiverOrg, savedTransfer);
+            externalDocumentClient.sendDocument(receiverSystem, payload, authorizationHeader);
+
+            savedTransfer.setStatus(DocumentTransfer.Status.SENT);
+            documentTransferRepository.save(savedTransfer);
+            documentRepository.save(document);
+
+        } catch (Exception e) {
+            savedTransfer.setStatus(DocumentTransfer.Status.FAILED);
+            documentTransferRepository.save(savedTransfer);
+            throw new RuntimeException("Gửi tài liệu thất bại " + e.getMessage(), e);
+        }
+
+        notificationService.createNotification(document.getCreatedBy().getId(), "Tài liệu, văn bản đã được gửi đi",
+                "Tài liệu, văn bản " + document.getDocumentCode() + " - " + document.getSummary()
+                        + " đã được gửi đến " + receiverOrg.getOrgName());
+
+        return DocumentTransferResponse.builder()
+                .status(savedTransfer.getStatus().name())
+                .senderUsername(savedTransfer.getSender().getUsername())
+                .receiverOrgCode(receiverOrg.getOrgCode())
+                .receiverOrgName(receiverOrg.getOrgName())
+                .documentCode(savedTransfer.getDocument().getDocumentCode())
+                .build();
     }
 
     private ExternalDocumentPayload buildPayload(Document document, DocumentSignature signature,
@@ -166,7 +156,8 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
 
     private String saveReceivedFile(ExternalDocumentFilePayload filePayload, String documentCode) {
         try {
-            String uploadDir = "uploads/received-documents/" + documentCode;
+            String uploadDir = "D:/VDT_1/mini_project/documentmanagement/documentmanagement/uploads/received-documents/"
+                    + documentCode;
 
             Files.createDirectories(Path.of(uploadDir));
 
@@ -189,132 +180,164 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
 
     @Override
     public String receiveDocument(ExternalDocumentPayload payload, String apiKey) {
-        String documentCode = payload != null ? payload.getDocumentCode() : null;
-        try {
-            if (!interconnectedSystemRepository.existsByApiKey(apiKey)) {
-                throw new RuntimeException("Api key không hợp lệ");
-            }
-
-            Document document = Document.builder()
-                    .documentCode(payload.getDocumentCode())
-                    .documentType(payload.getDocumentType())
-                    .summary(payload.getSummary())
-                    .build();
-
-            User leader = User.builder()
-                    .id(payload.getSignature().getSignerId())
-                    .username(payload.getSignature().getSignerName())
-                    .build();
-
-            List<DocumentFile> documentFiles = new ArrayList<>();
-
-            if (payload.getFiles() != null) {
-                for (ExternalDocumentFilePayload filePayload : payload.getFiles()) {
-                    String filePath = saveReceivedFile(filePayload, documentCode);
-                    DocumentFile file = DocumentFile.builder()
-                            .storedFileName(filePayload.getStoredFileName())
-                            .originalFileName(filePayload.getOriginalFileName())
-                            .fileType(filePayload.getFileType())
-                            .fileSize(filePayload.getFileSize())
-                            .filePath(filePath)
-                            .build();
-                    documentFiles.add(file);
-                }
-            }
-
-            String hashValueChecking = DocumentSign.generateDocumentHash(document, documentFiles, leader);
-
-            if (!hashValueChecking.equals(payload.getSignature().getHashValue())) {
-                throw new RuntimeException("Chữ ký không hợp lệ");
-            }
-
-            appLogger.infoDocument("RECEIVE_DOCUMENT", leader.getId(), payload.getDocumentCode(),
-                    "Receive document successfully");
-
-            return "Gửi thành công";
-        } catch (RuntimeException e) {
-            appLogger.errorDocument("RECEIVE_DOCUMENT", null, documentCode,
-                    "Receive document failed: " + e.getMessage(), e);
-            throw e;
+        if (!interconnectedSystemRepository.existsByApiKey(apiKey)) {
+            throw new RuntimeException("Api key không hợp lệ");
         }
+
+        Document document = Document.builder()
+                .documentCode(payload.getDocumentCode())
+                .documentType(payload.getDocumentType())
+                .summary(payload.getSummary())
+                .build();
+
+        User leader = User.builder()
+                .id(payload.getSignature().getSignerId())
+                .username(payload.getSignature().getSignerName())
+                .build();
+
+        List<DocumentFile> documentFiles = new ArrayList<>();
+
+        if (payload.getFiles() != null) {
+            for (ExternalDocumentFilePayload filePayload : payload.getFiles()) {
+                String filePath = saveReceivedFile(filePayload, payload.getDocumentCode());
+                DocumentFile file = DocumentFile.builder()
+                        .storedFileName(filePayload.getStoredFileName())
+                        .originalFileName(filePayload.getOriginalFileName())
+                        .fileType(filePayload.getFileType())
+                        .fileSize(filePayload.getFileSize())
+                        .filePath(filePath)
+                        .build();
+                documentFiles.add(file);
+            }
+        }
+
+        String hashValueChecking = DocumentSign.generateDocumentHash(document, documentFiles, leader);
+
+        if (!hashValueChecking.equals(payload.getSignature().getHashValue())) {
+            throw new RuntimeException("Chữ ký không hợp lệ");
+        }
+
+        return "Gửi thành công";
     }
 
     @Override
     public DocumentTransferResponse accessReceiveDocument(Integer documentId, User clerk, Integer receiverOrgId) {
-        String documentCode = String.valueOf(documentId);
-        try {
-            DocumentTransfer transfer = documentTransferRepository
-                    .findByDocument_IdAndReceiverOrganization_Id(documentId, receiverOrgId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin gửi"));
-            documentCode = transfer.getDocument().getDocumentCode();
-
-            if (!clerk.getOrganization().getId().equals(receiverOrgId)) {
-                throw new RuntimeException("Bạn không phải là người nhận của đơn vị này");
-            }
-
-            transfer.setReceiver(clerk);
-            transfer.setReceivedAt(LocalDateTime.now());
-            transfer.setStatus(DocumentTransfer.Status.RECEIVED);
-
-            documentTransferRepository.save(transfer);
-
-            appLogger.infoDocument("CONFIRM_RECEIVE_DOCUMENT", clerk.getId(), documentCode,
-                    "Confirm receive document successfully");
-
-            return DocumentTransferResponse.builder()
-                    .status(transfer.getStatus().name())
-                    .senderUsername(transfer.getSender().getUsername())
-                    .receiverOrgCode(transfer.getReceiverOrganization().getOrgCode())
-                    .receiverUsername(clerk.getUsername())
-                    .documentCode(transfer.getDocument().getDocumentCode())
-                    .build();
-        } catch (RuntimeException e) {
-            appLogger.errorDocument("CONFIRM_RECEIVE_DOCUMENT", clerk != null ? clerk.getId() : null, documentCode,
-                    "Confirm receive document failed: " + e.getMessage(), e);
-            throw e;
+        DocumentTransfer transfer = documentTransferRepository
+                .findByDocument_IdAndReceiverOrganization_Id(documentId, receiverOrgId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin gửi"));
+        if (!clerk.getOrganization().getId().equals(receiverOrgId)) {
+            throw new RuntimeException("Bạn không phải là người nhận của đơn vị này");
         }
+
+        transfer.setReceiver(clerk);
+        transfer.setReceivedAt(LocalDateTime.now());
+        transfer.setStatus(DocumentTransfer.Status.RECEIVED);
+
+        documentTransferRepository.save(transfer);
+
+        return DocumentTransferResponse.builder()
+                .status(transfer.getStatus().name())
+                .senderUsername(transfer.getSender().getUsername())
+                .receiverOrgCode(transfer.getReceiverOrganization().getOrgCode())
+                .receiverUsername(clerk.getUsername())
+                .documentCode(transfer.getDocument().getDocumentCode())
+                .build();
     }
 
     @Override
     public DocumentTransferResponse responseReceiveDocument(Integer documentId, User manager, Integer receiverOrgId,
             Map<String, String> request) {
-        String documentCode = String.valueOf(documentId);
-        try {
-            DocumentTransfer transfer = documentTransferRepository
-                    .findByDocument_IdAndReceiverOrganization_Id(documentId, receiverOrgId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin gửi"));
-            documentCode = transfer.getDocument().getDocumentCode();
-
-            if (!transfer.getStatus().name().equals("RECEIVED")) {
-                throw new RuntimeException("Tài liệu này chưa được xác nhận");
-            }
-
-            if (!manager.getOrganization().getId().equals(receiverOrgId)) {
-                throw new RuntimeException("Bạn không phải là người nhận của đơn vị này");
-            }
-
-            String responseContent = request.get("responseContent");
-
-            transfer.setResponseContent(responseContent);
-            transfer.setStatus(DocumentTransfer.Status.RESPONDED);
-            transfer.setRespondedAt(LocalDateTime.now());
-            documentTransferRepository.save(transfer);
-
-            appLogger.infoDocument("RESPOND_DOCUMENT", manager.getId(), documentCode,
-                    "Respond document successfully");
-
-            return DocumentTransferResponse.builder()
-                    .responseContent(responseContent)
-                    .status(transfer.getStatus().name())
-                    .senderUsername(transfer.getSender().getUsername())
-                    .receiverOrgCode(transfer.getReceiverOrganization().getOrgCode())
-                    .receiverUsername(manager.getUsername())
-                    .documentCode(transfer.getDocument().getDocumentCode())
-                    .build();
-        } catch (RuntimeException e) {
-            appLogger.errorDocument("RESPOND_DOCUMENT", manager != null ? manager.getId() : null, documentCode,
-                    "Respond document failed: " + e.getMessage(), e);
-            throw e;
+        DocumentTransfer transfer = documentTransferRepository
+                .findByDocument_IdAndReceiverOrganization_Id(documentId, receiverOrgId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin gửi"));
+        if (!transfer.getStatus().name().equals("RECEIVED")) {
+            throw new RuntimeException("Tài liệu này chưa được xác nhận");
         }
+
+        if (!manager.getOrganization().getId().equals(receiverOrgId)) {
+            throw new RuntimeException("Bạn không phải là người nhận của đơn vị này");
+        }
+
+        String responseContent = request.get("responseContent");
+
+        transfer.setResponseContent(responseContent);
+        transfer.setStatus(DocumentTransfer.Status.RESPONDED);
+        transfer.setRespondedAt(LocalDateTime.now());
+        documentTransferRepository.save(transfer);
+
+        return DocumentTransferResponse.builder()
+                .responseContent(responseContent)
+                .status(transfer.getStatus().name())
+                .senderUsername(transfer.getSender().getUsername())
+                .receiverOrgCode(transfer.getReceiverOrganization().getOrgCode())
+                .receiverUsername(manager.getUsername())
+                .documentCode(transfer.getDocument().getDocumentCode())
+                .build();
+    }
+
+    @Override
+    public PageResponse<DocumentResponse> findAllByReceiverOrgId(Integer orgId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("sentAt").descending());
+
+        Page<DocumentTransfer> documentTransferPage = documentTransferRepository.findByReceiverOrganization_Id(orgId,
+                pageable);
+
+        List<DocumentResponse> content = documentTransferPage.getContent().stream()
+                .map(transfer -> DocumentResponse.builder()
+                        .id(transfer.getDocument().getId())
+                        .documentType(transfer.getDocument().getDocumentType())
+                        .documentCode(transfer.getDocument().getDocumentCode())
+                        .senderOrgName(transfer.getDocument().getSenderOrganization().getOrgName())
+                        .summary(transfer.getDocument().getSummary())
+                        .status(transfer.getStatus().name())
+                        .creatdAt(transfer.getDocument().getCreatedAt())
+                        .updatedAt(transfer.getDocument().getUpdatedAt())
+                        .message(null)   
+                        .build())
+                .toList();
+
+        return PageResponse.<DocumentResponse>builder()
+                .content(content)
+                .page(documentTransferPage.getNumber())
+                .size(documentTransferPage.getSize())
+                .totalElements(documentTransferPage.getTotalElements())
+                .totalPages(documentTransferPage.getTotalPages())
+                .first(documentTransferPage.isFirst())
+                .last(documentTransferPage.isLast())
+                .build();
+    }
+
+    @Override
+    public PageResponse<DocumentResponse> findAllByStatusAndReceiverOrgId(String status, Integer orgId, int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("sentAt").descending());
+
+        DocumentTransfer.Status transferStatus = DocumentTransfer.Status.valueOf(status);
+
+        Page<DocumentTransfer> documentTransferPage = documentTransferRepository.findByStatusAndReceiverOrganization_Id(transferStatus, orgId, pageable);
+
+        List<DocumentResponse> content = documentTransferPage.getContent().stream()
+                .map(transfer -> DocumentResponse.builder()
+                        .id(transfer.getDocument().getId())
+                        .documentType(transfer.getDocument().getDocumentType())
+                        .documentCode(transfer.getDocument().getDocumentCode())
+                        .senderOrgName(transfer.getDocument().getSenderOrganization().getOrgName())
+                        .summary(transfer.getDocument().getSummary())
+                        .status(transfer.getStatus().name())
+                        .creatdAt(transfer.getDocument().getCreatedAt())
+                        .updatedAt(transfer.getDocument().getUpdatedAt())
+                        .message(null)
+                        .build())
+                .toList();
+
+        return PageResponse.<DocumentResponse>builder()
+                .content(content)
+                .page(documentTransferPage.getNumber())
+                .size(documentTransferPage.getSize())
+                .totalElements(documentTransferPage.getTotalElements())
+                .totalPages(documentTransferPage.getTotalPages())
+                .first(documentTransferPage.isFirst())
+                .last(documentTransferPage.isLast())
+                .build();
     }
 }
