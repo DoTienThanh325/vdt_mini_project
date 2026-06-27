@@ -19,7 +19,7 @@ export interface RegisterRequest {
   phone?: string;
   email: string;
   roleId: number;
-  organizationId: number;
+  organizationId?: number;
 }
 
 export interface RegisterResponse {
@@ -28,7 +28,7 @@ export interface RegisterResponse {
   fullName: string;
   email: string;
   role: string;
-  organization: string;
+  organization: string | null;
   status: string;
   message: string;
 }

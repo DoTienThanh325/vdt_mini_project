@@ -160,9 +160,13 @@ export class CreatedDocument implements OnInit {
       .createDocument(request)
       .pipe(
         switchMap((createdDocument) =>
-          this.documentService.uploadDocumentFiles(createdDocument.id, this.selectedFiles).pipe(
-            map(() => createdDocument),
-          ),
+          this.documentService
+            .uploadDocumentFiles(
+              createdDocument.id,
+              this.selectedFiles,
+              'Tạo văn bản, tài liệu không thành công',
+            )
+            .pipe(map(() => createdDocument)),
         ),
         finalize(() => {
           this.createLoading = false;

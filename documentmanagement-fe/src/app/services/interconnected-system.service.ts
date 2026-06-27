@@ -6,6 +6,7 @@ import {
   NewInterconnectedSystemRequest,
   UpdateInterconnectedSystemRequest,
 } from '../models/interconnected-system.model';
+import { getApiErrorMessage } from '../utils/api-error';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,7 @@ export class InterconnectedSystemService {
       .get<InterconnectedSystemResponse[]>(this.apiUrl, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tải danh sách hệ thống liên thông không thành công')));
   }
 
   create(
@@ -30,7 +31,7 @@ export class InterconnectedSystemService {
       .post<InterconnectedSystemResponse>(`${this.apiUrl}/new`, request, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tạo hệ thống liên thông không thành công')));
   }
 
   update(
@@ -41,7 +42,7 @@ export class InterconnectedSystemService {
       .patch<InterconnectedSystemResponse>(`${this.apiUrl}/${id}`, request, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Cập nhật hệ thống liên thông không thành công')));
   }
 
   private getAuthorizationHeaders(): HttpHeaders {
@@ -53,13 +54,10 @@ export class InterconnectedSystemService {
       : new HttpHeaders();
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    const message =
-      error.error?.message ||
-      error.error?.error ||
-      (typeof error.error === 'string' ? error.error : '') ||
-      'Không thể tải dữ liệu hệ thống liên thông';
-
-    return throwError(() => new Error(message));
+  private handleError(
+    error: HttpErrorResponse,
+    operationFallback: string,
+  ): Observable<never> {
+    return throwError(() => new Error(getApiErrorMessage(error, operationFallback)));
   }
 }

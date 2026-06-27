@@ -9,6 +9,7 @@ import {
   UserDetailResponse,
   UserResponse,
 } from '../models/user.model';
+import { getApiErrorMessage } from '../utils/api-error';
 
 @Injectable({
   providedIn: 'root',
@@ -30,7 +31,7 @@ export class UserService {
         params,
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tải danh sách người dùng không thành công')));
   }
 
   findById(id: number): Observable<UserDetailResponse> {
@@ -38,7 +39,7 @@ export class UserService {
       .get<UserDetailResponse>(`${this.apiUrl}/${id}`, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tải thông tin người dùng không thành công')));
   }
 
   findRoles(): Observable<RoleResponse[]> {
@@ -46,7 +47,7 @@ export class UserService {
       .get<RoleResponse[]>(this.roleUrl, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tải danh sách vai trò không thành công')));
   }
 
   register(request: RegisterRequest): Observable<RegisterResponse> {
@@ -54,7 +55,7 @@ export class UserService {
       .post<RegisterResponse>(`${this.authUrl}/register`, request, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tạo người dùng không thành công')));
   }
 
   updateStatus(id: number): Observable<UserResponse> {
@@ -64,7 +65,7 @@ export class UserService {
         {},
         { headers: this.getAuthorizationHeaders() },
       )
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Cập nhật trạng thái người dùng không thành công')));
   }
 
   private getAuthorizationHeaders(): HttpHeaders {
@@ -76,17 +77,10 @@ export class UserService {
       : new HttpHeaders();
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    const message =
-      error.error?.message ||
-      error.error?.error ||
-      (typeof error.error === 'string' ? error.error : '') ||
-      'Không thể tải dữ liệu người dùng';
-
-    return throwError(() => new Error(this.cleanErrorMessage(message)));
-  }
-
-  private cleanErrorMessage(message: string): string {
-    return message.replace(/^(error|Error):\s*/i, '');
+  private handleError(
+    error: HttpErrorResponse,
+    operationFallback: string,
+  ): Observable<never> {
+    return throwError(() => new Error(getApiErrorMessage(error, operationFallback)));
   }
 }

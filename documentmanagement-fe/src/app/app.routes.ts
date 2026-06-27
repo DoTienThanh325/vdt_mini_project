@@ -8,10 +8,10 @@ import { InterconnectedSystemCreate } from './pages/interconnected-system-create
 import { InterconnectedSystemDetail } from './pages/interconnected-system-detail/interconnected-system-detail';
 import { LoginComponent } from './pages/login/login';
 import { Organization } from './pages/organization/organization';
+import { OrganizationRegistration } from './pages/organization-registration/organization-registration';
 import { OrganizationDetail } from './pages/organization-detail/organization-detail';
 import { OutgoingDocument } from './pages/outgoing-document/outgoing-document';
 import { OutgoingDocumentDetail } from './pages/outgoing-document-detail/outgoing-document-detail';
-import { Placeholder } from './pages/placeholder/placeholder';
 import { User } from './pages/user/user';
 import { UserDetail } from './pages/user-detail/user-detail';
 
@@ -54,8 +54,7 @@ export const routes: Routes = [
   },
   {
     path: 'home/organization-registration',
-    component: Placeholder,
-    data: { title: 'Đăng ký đơn vị liên thông' },
+    component: OrganizationRegistration,
   },
   {
     path: 'home/documents/outgoing',

@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs';
+import { Subject, filter, takeUntil } from 'rxjs';
+import { Notification } from './models/notification.model';
 import { AuthService } from './services/auth';
+import { NotificationService } from './services/notification.service';
+import { formatLocalDateTime } from './utils/local-date-time';
 
 interface DocumentMenuItem {
   label: string;
@@ -17,12 +20,20 @@ interface DocumentMenuItem {
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   role = '';
   fullName = '';
+  username = '';
   sidebarOpen = false;
   documentsExpanded = true;
   currentUrl = '';
+  notifications: Notification[] = [];
+  selectedNotification: Notification | null = null;
+  notificationError = '';
+  markingNotificationId = '';
+
+  private notificationsActive = false;
+  private readonly destroy$ = new Subject<void>();
 
   readonly documentMenuItems: DocumentMenuItem[] = [
     {
@@ -44,14 +55,28 @@ export class App implements OnInit {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly notificationService: NotificationService,
     private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
     this.updateLayoutState(this.router.url);
     this.router.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$),
+      )
       .subscribe((event) => this.updateLayoutState(event.urlAfterRedirects));
+
+    this.notificationService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((notifications) => (this.notifications = notifications));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.notificationService.disconnect();
   }
 
   get showLayout(): boolean {
@@ -72,6 +97,15 @@ export class App implements OnInit {
 
   get visibleDocumentMenuItems(): DocumentMenuItem[] {
     return this.documentMenuItems.filter((item) => item.roles.includes(this.role));
+  }
+
+  get unreadNotifications(): Notification[] {
+    return this.notifications.filter((notification) => !notification.isRead);
+  }
+
+  get unreadCountLabel(): string {
+    const count = this.unreadNotifications.length;
+    return count > 99 ? '99+' : String(count);
   }
 
   get activeTitle(): string {
@@ -102,7 +136,50 @@ export class App implements OnInit {
     this.sidebarOpen = false;
   }
 
+  openNotification(notification: Notification): void {
+    if (this.markingNotificationId) {
+      return;
+    }
+
+    this.selectedNotification = notification;
+    this.notificationError = '';
+
+    if (notification.isRead) {
+      return;
+    }
+
+    this.markingNotificationId = notification.id;
+    this.notificationService
+      .markAsRead(notification.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updatedNotification) => {
+          this.selectedNotification = updatedNotification;
+          this.markingNotificationId = '';
+        },
+        error: (error: Error) => {
+          this.notificationError = error.message;
+          this.markingNotificationId = '';
+        },
+      });
+  }
+
+  closeNotificationDetail(): void {
+    this.selectedNotification = null;
+  }
+
+  formatNotificationDate(value: Notification['createdAt']): string {
+    return formatLocalDateTime(value);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeNotificationDetailOnEscape(): void {
+    this.closeNotificationDetail();
+  }
+
   logout(): void {
+    this.notificationService.disconnect();
+    this.notificationService.clear();
     this.authService.logout();
     this.router.navigate(['/login']);
   }
@@ -110,13 +187,37 @@ export class App implements OnInit {
   private updateLayoutState(url: string): void {
     this.currentUrl = url.split('?')[0];
     this.role = (this.authService.getRole() || '').trim().toUpperCase().replace(/^ROLE_/, '');
+    this.username = localStorage.getItem('username') || '';
     this.fullName =
       localStorage.getItem('fullName') ||
-      localStorage.getItem('username') ||
+      this.username ||
       'Người dùng';
 
     if (this.currentUrl.startsWith('/home/documents')) {
       this.documentsExpanded = true;
+    }
+
+    this.syncNotifications();
+  }
+
+  private syncNotifications(): void {
+    if (this.showLayout && !this.notificationsActive) {
+      this.notificationsActive = true;
+      this.notificationError = '';
+      this.notificationService
+        .loadToday()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          error: (error: Error) => (this.notificationError = error.message),
+        });
+      this.notificationService.connect();
+      return;
+    }
+
+    if (!this.showLayout && this.notificationsActive) {
+      this.notificationsActive = false;
+      this.notificationService.disconnect();
+      this.notificationService.clear();
     }
   }
 }

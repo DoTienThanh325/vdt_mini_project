@@ -78,6 +78,45 @@
         </section>
       }
 
+      @if (responseTransfer) {
+        <section class="detail-section response-section">
+          <h4>Thông tin phản hồi</h4>
+          <dl class="response-detail">
+            <div>
+              <dt>Nội dung phản hồi</dt>
+              <dd>{{ responseTransfer.responseContent }}</dd>
+            </div>
+          </dl>
+        </section>
+      } @else if (isManager) {
+        <section class="detail-section response-section">
+          <h4>Phản hồi văn bản</h4>
+          <label class="response-label" for="response-content">Nội dung phản hồi</label>
+          <textarea
+            id="response-content"
+            name="responseContent"
+            rows="5"
+            maxlength="2000"
+            placeholder="Nhập nội dung phản hồi..."
+            [(ngModel)]="responseContent"
+            [disabled]="!canRespond || responseLoading"
+          ></textarea>
+          @if (!canRespond) {
+            <p class="response-hint">Văn bản cần được xác nhận nhận trước khi phản hồi.</p>
+          }
+          <div class="response-actions">
+            <button
+              class="primary-action"
+              type="button"
+              [disabled]="!canRespond || responseLoading || !responseContent.trim()"
+              (click)="respondToDocument()"
+            >
+              {{ responseLoading ? 'Đang phản hồi...' : 'Phản hồi' }}
+            </button>
+          </div>
+        </section>
+      }
+
       <section class="detail-section">
         <h4>Files</h4>
         @if (fileErrorMessage) {

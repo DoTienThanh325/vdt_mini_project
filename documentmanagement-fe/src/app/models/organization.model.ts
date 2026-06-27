@@ -24,4 +24,13 @@ export interface UpdateOrgRequest {
   systemId?: number;
 }
 
+export interface NewOrgRequest {
+  orgCode: string;
+  orgName: string;
+  address?: string;
+  email: string;
+  phone?: string;
+  systemId: number;
+}
+
 export type OrgPageResponse = PageResponse<OrgResponse>;

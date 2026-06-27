@@ -1,0 +1,174 @@
+<section class="registration-page">
+  @if (checkingCreatedOrganization) {
+    <div class="loading-card">
+      <span class="spinner"></span>
+      Đang tải thông tin đơn vị đã đăng ký...
+    </div>
+  } @else if (createdOrganization) {
+    <div class="success-card">
+      <div class="success-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6"></path>
+        </svg>
+      </div>
+      <div>
+        <p class="eyebrow">Đơn vị đã đăng ký</p>
+        <h2>{{ createdOrganization.orgName }}</h2>
+        @if (createdOrganization.status !== 'ACTIVE') {
+          <p>
+            Đơn vị <strong>{{ createdOrganization.orgCode }}</strong> đã được gửi đăng ký
+            và đang chờ quản trị viên phê duyệt.
+          </p>
+        }
+      </div>
+      <dl>
+        <div>
+          <dt>Hệ thống liên thông</dt>
+          <dd>{{ createdOrganization.systemName }}</dd>
+        </div>
+        <div>
+          <dt>Trạng thái</dt>
+          <dd>
+            <span class="status-badge" [class]="createdOrganization.status.toLowerCase()">
+              {{ createdOrganization.status }}
+            </span>
+          </dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ createdOrganization.email }}</dd>
+        </div>
+      </dl>
+      <button
+        type="button"
+        class="refresh-button"
+        [disabled]="checkingCreatedOrganization"
+        (click)="refreshStatus()"
+      >
+        @if (checkingCreatedOrganization) {
+          <span class="button-spinner"></span> Đang tải...
+        } @else {
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          Làm mới trạng thái
+        }
+      </button>
+    </div>
+  } @else {
+    <div class="form-card">
+      <div class="form-heading">
+        <div>
+          <p class="eyebrow">Organization registration</p>
+          <h2>Đăng ký đơn vị liên thông</h2>
+          <p>Đơn vị sau khi đăng ký sẽ ở trạng thái chờ phê duyệt.</p>
+        </div>
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-message">
+          <span>{{ errorMessage }}</span>
+          @if (systems.length === 0 && !loadingSystems) {
+            <button type="button" (click)="loadSystems()">Tải lại hệ thống</button>
+          }
+        </div>
+      }
+
+      <form (ngSubmit)="submit()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="orgCode">Mã đơn vị <span>*</span></label>
+            <input
+              id="orgCode"
+              name="orgCode"
+              type="text"
+              maxlength="100"
+              placeholder="Ví dụ: ORG_HN_01"
+              [(ngModel)]="request.orgCode"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="orgName">Tên đơn vị <span>*</span></label>
+            <input
+              id="orgName"
+              name="orgName"
+              type="text"
+              placeholder="Nhập tên đơn vị"
+              [(ngModel)]="request.orgName"
+              required
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="systemId">Hệ thống liên thông <span>*</span></label>
+            <select
+              id="systemId"
+              name="systemId"
+              [(ngModel)]="request.systemId"
+              [disabled]="loadingSystems"
+              required
+            >
+              <option [ngValue]="0">
+                {{ loadingSystems ? 'Đang tải hệ thống...' : 'Chọn hệ thống liên thông' }}
+              </option>
+              @for (system of activeSystems; track system.id) {
+                <option [ngValue]="system.id">
+                  {{ system.systemName }} ({{ system.systemCode }})
+                </option>
+              }
+            </select>
+            @if (!loadingSystems && activeSystems.length === 0) {
+              <small>Hiện chưa có hệ thống liên thông đang hoạt động.</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email đơn vị <span>*</span></label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="contact@example.com"
+              [(ngModel)]="request.email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Số điện thoại</label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              maxlength="20"
+              placeholder="Nhập số điện thoại"
+              [(ngModel)]="request.phone"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="address">Địa chỉ</label>
+            <textarea
+              id="address"
+              name="address"
+              rows="4"
+              maxlength="500"
+              placeholder="Nhập địa chỉ đơn vị"
+              [(ngModel)]="request.address"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <p><span>*</span> Thông tin bắt buộc</p>
+          <button
+            type="submit"
+            [disabled]="submitting || loadingSystems || activeSystems.length === 0"
+          >
+            {{ submitting ? 'Đang gửi đăng ký...' : 'Gửi đăng ký' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</section>

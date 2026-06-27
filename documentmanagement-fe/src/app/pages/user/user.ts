@@ -196,7 +196,7 @@ export class User implements OnInit {
       phone: this.registerForm.phone?.trim() || undefined,
       email: this.registerForm.email.trim(),
       roleId: Number(this.registerForm.roleId),
-      organizationId: Number(this.registerForm.organizationId),
+      organizationId: Number(this.registerForm.organizationId) || undefined,
     };
 
     if (
@@ -204,8 +204,7 @@ export class User implements OnInit {
       !request.password ||
       !request.fullName ||
       !request.email ||
-      !request.roleId ||
-      !request.organizationId
+      !request.roleId
     ) {
       this.createErrorMessage = 'Vui lòng nhập đầy đủ thông tin bắt buộc';
       return;
@@ -249,7 +248,7 @@ export class User implements OnInit {
       phone: '',
       email: '',
       roleId: 0,
-      organizationId: 0,
+      organizationId: undefined,
     };
   }
 }

@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { getApiErrorMessage } from '../utils/api-error';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,7 @@ export class AuthService {
           localStorage.setItem('fullName', response.fullName);
           localStorage.setItem('role', response.role);
         }),
-        catchError(this.handleError)
+        catchError((error) => this.handleError(error))
       );
   }
 
@@ -33,6 +34,7 @@ export class AuthService {
     localStorage.removeItem('username');
     localStorage.removeItem('fullName');
     localStorage.removeItem('role');
+    localStorage.removeItem('organizationId');
   }
 
   getToken(): string | null {
@@ -48,18 +50,6 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    let message = 'Đăng nhập thất bại';
-
-    if (error.error) {
-      if (typeof error.error === 'string') {
-        message = error.error;
-      } else if (error.error.message) {
-        message = error.error.message;
-      } else if (error.error.error) {
-        message = error.error.error;
-      }
-    }
-
-    return throwError(() => new Error(message));
+    return throwError(() => new Error(getApiErrorMessage(error, 'Đăng nhập không thành công')));
   }
 }

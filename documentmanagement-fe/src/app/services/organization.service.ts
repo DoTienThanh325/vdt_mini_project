@@ -1,7 +1,13 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
-import { OrgPageResponse, OrgResponse, UpdateOrgRequest } from '../models/organization.model';
+import {
+  NewOrgRequest,
+  OrgPageResponse,
+  OrgResponse,
+  UpdateOrgRequest,
+} from '../models/organization.model';
+import { getApiErrorMessage } from '../utils/api-error';
 
 @Injectable({
   providedIn: 'root',
@@ -19,7 +25,7 @@ export class OrganizationService {
         params,
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Tải danh sách đơn vị liên thông không thành công')));
   }
 
   findByStatus(
@@ -34,7 +40,7 @@ export class OrganizationService {
         params,
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Lọc đơn vị liên thông không thành công')));
   }
 
   update(id: number, request: UpdateOrgRequest): Observable<OrgResponse> {
@@ -42,7 +48,31 @@ export class OrganizationService {
       .patch<OrgResponse>(`${this.apiUrl}/${id}/`, request, {
         headers: this.getAuthorizationHeaders(),
       })
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Cập nhật đơn vị liên thông không thành công')));
+  }
+
+  create(request: NewOrgRequest): Observable<OrgResponse> {
+    return this.http
+      .post<OrgResponse>(`${this.apiUrl}/new`, request, {
+        headers: this.getAuthorizationHeaders(),
+      })
+      .pipe(
+        catchError((error) =>
+          this.handleError(error, 'Đăng ký đơn vị liên thông không thành công'),
+        ),
+      );
+  }
+
+  findCreated(): Observable<OrgResponse> {
+    return this.http
+      .get<OrgResponse>(`${this.apiUrl}/created`, {
+        headers: this.getAuthorizationHeaders(),
+      })
+      .pipe(
+        catchError((error) =>
+          this.handleError(error, 'Tải thông tin đơn vị đã đăng ký không thành công'),
+        ),
+      );
   }
 
   activate(id: number): Observable<OrgResponse> {
@@ -52,7 +82,7 @@ export class OrganizationService {
         {},
         { headers: this.getAuthorizationHeaders() },
       )
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Kích hoạt đơn vị liên thông không thành công')));
   }
 
   softDelete(id: number): Observable<OrgResponse> {
@@ -62,7 +92,7 @@ export class OrganizationService {
         {},
         { headers: this.getAuthorizationHeaders() },
       )
-      .pipe(catchError((error) => this.handleError(error)));
+      .pipe(catchError((error) => this.handleError(error, 'Ngừng hoạt động đơn vị liên thông không thành công')));
   }
 
   findByCode(orgCode: string, page = 0, size = 50): Observable<OrgResponse | null> {
@@ -89,14 +119,10 @@ export class OrganizationService {
       : new HttpHeaders();
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    const message = (
-      error.error?.message ||
-      error.error?.error ||
-      (typeof error.error === 'string' ? error.error : '') ||
-      'Không thể tải dữ liệu đơn vị liên thông'
-    ).replace(/^(error|Error):\s*/i, '');
-
-    return throwError(() => new Error(message));
+  private handleError(
+    error: HttpErrorResponse,
+    operationFallback: string,
+  ): Observable<never> {
+    return throwError(() => new Error(getApiErrorMessage(error, operationFallback)));
   }
 }

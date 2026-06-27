@@ -19,3 +19,75 @@
   background: #fdf2fa;
   color: #c11574;
 }
+
+.response-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.response-section textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 12px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  outline: none;
+  color: #101828;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.response-section textarea:focus {
+  border-color: #84adff;
+  box-shadow: 0 0 0 3px #eff4ff;
+}
+
+.response-section textarea:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+.response-hint {
+  margin: 8px 0 0;
+  color: #667085;
+  font-size: 12px;
+}
+
+.response-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.response-detail {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+
+.response-detail div {
+  padding: 14px 16px;
+  border: 1px solid #eaecf0;
+  border-radius: 9px;
+  background: #f9fafb;
+}
+
+.response-detail dt {
+  margin-bottom: 6px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.response-detail dd {
+  margin: 0;
+  color: #101828;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

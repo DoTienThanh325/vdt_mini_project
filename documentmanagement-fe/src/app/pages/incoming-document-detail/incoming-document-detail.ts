@@ -1,15 +1,20 @@
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
-import { DocumentFileResponse, DocumentResponse } from '../../models/document.model';
+import {
+  DocumentFileResponse,
+  DocumentResponse,
+  DocumentTransferResponse,
+} from '../../models/document.model';
 import { DocumentService } from '../../services/document.service';
 import { formatLocalDateTime, LocalDateTimeValue } from '../../utils/local-date-time';
 
 @Component({
   selector: 'app-incoming-document-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './incoming-document-detail.html',
   styleUrl: './incoming-document-detail.css',
 })
@@ -19,12 +24,15 @@ export class IncomingDocumentDetail implements OnInit {
   listDocument: DocumentResponse | null = null;
   loading = false;
   actionLoading = false;
+  responseLoading = false;
   openingFileId: number | null = null;
   downloadingFileId: number | null = null;
   errorMessage = '';
   actionMessage = '';
   actionErrorMessage = '';
   fileErrorMessage = '';
+  responseContent = '';
+  latestResponse: DocumentTransferResponse | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -42,14 +50,28 @@ export class IncomingDocumentDetail implements OnInit {
   get displayDocument(): DocumentResponse | null {
     if (!this.document && !this.listDocument) return null;
 
+    const detailedTransfers = this.documentTransfers(this.document);
+    const incomingTransferStatus =
+      detailedTransfers.find((transfer) =>
+        ['SENT', 'RECEIVED', 'RESPONDED', 'FAILED'].includes(transfer.status),
+      )?.status || '';
+    const transfers =
+      this.document?.tranfers ||
+      this.document?.transfers ||
+      this.listDocument?.tranfers ||
+      this.listDocument?.transfers ||
+      [];
+
     return {
       ...(this.document || ({} as DocumentResponse)),
       ...(this.listDocument || {}),
       files: this.document?.files || this.listDocument?.files || [],
+      tranfers: transfers,
+      transfers,
       summary: this.document?.summary || this.listDocument?.summary || '',
       documentCode: this.document?.documentCode || this.listDocument?.documentCode || '',
       documentType: this.document?.documentType || this.listDocument?.documentType || '',
-      status: this.listDocument?.status || this.document?.status || '',
+      status: this.listDocument?.status || incomingTransferStatus || this.document?.status || '',
       id: this.document?.id || this.listDocument?.id || this.documentId,
       updatedAt: this.document?.updatedAt || this.listDocument?.updatedAt || null,
       message: null,
@@ -64,8 +86,26 @@ export class IncomingDocumentDetail implements OnInit {
     return this.role === 'CLERK';
   }
 
+  get isManager(): boolean {
+    return this.role === 'MANAGER';
+  }
+
   get canConfirmReceive(): boolean {
     return this.displayDocument?.status === 'SENT';
+  }
+
+  get responseTransfer(): DocumentTransferResponse | null {
+    return (
+      this.latestResponse ||
+      this.documentTransfers(this.displayDocument).find(
+        (transfer) => !!transfer.responseContent?.trim(),
+      ) ||
+      null
+    );
+  }
+
+  get canRespond(): boolean {
+    return this.displayDocument?.status === 'RECEIVED' && !this.responseTransfer;
   }
 
   loadDocument(): void {
@@ -122,6 +162,44 @@ export class IncomingDocumentDetail implements OnInit {
           this.loadDocument();
         },
         error: (error: Error) => (this.actionErrorMessage = this.cleanErrorMessage(error.message)),
+      });
+  }
+
+  respondToDocument(): void {
+    const document = this.displayDocument;
+    const content = this.responseContent.trim();
+
+    if (!document || !this.isManager || !this.canRespond || this.responseLoading) {
+      return;
+    }
+
+    if (!content) {
+      this.actionErrorMessage = 'Vui lòng nhập nội dung phản hồi';
+      return;
+    }
+
+    this.responseLoading = true;
+    this.actionMessage = '';
+    this.actionErrorMessage = '';
+
+    this.documentService
+      .respond(document.id, content)
+      .pipe(
+        finalize(() => {
+          this.responseLoading = false;
+          this.changeDetectorRef.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          this.latestResponse = response;
+          this.responseContent = '';
+          this.updateDisplayedDocumentStatus(response.status || 'RESPONDED');
+          this.actionMessage = 'Phản hồi văn bản, tài liệu thành công';
+        },
+        error: (error: Error) => {
+          this.actionErrorMessage = this.cleanErrorMessage(error.message);
+        },
       });
   }
 
@@ -184,6 +262,10 @@ export class IncomingDocumentDetail implements OnInit {
     return document?.files || [];
   }
 
+  documentTransfers(document: DocumentResponse | null): DocumentTransferResponse[] {
+    return document?.tranfers || document?.transfers || [];
+  }
+
   formatFileSize(fileSize: number | null | undefined): string {
     if (!fileSize && fileSize !== 0) return '-';
     if (fileSize < 1024) return `${fileSize} B`;
@@ -238,6 +320,16 @@ export class IncomingDocumentDetail implements OnInit {
     }
 
     return null;
+  }
+
+  private updateDisplayedDocumentStatus(status: string): void {
+    const document = this.displayDocument;
+    if (!document) return;
+
+    this.listDocument = { ...document, status };
+    if (this.document) {
+      this.document = { ...this.document, status };
+    }
   }
 
   private cleanErrorMessage(message: string): string {
