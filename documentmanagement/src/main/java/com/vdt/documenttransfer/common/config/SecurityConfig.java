@@ -1,9 +1,10 @@
 package com.vdt.documenttransfer.common.config;
 
-import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -65,6 +66,11 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/interconnected-systems")
+                                                .hasAnyRole("ADMIN", "ORGADMIN")
+
+                                                .requestMatchers(
                                                                 "/api/admin/**",
                                                                 "/api/users/*/assignment",
                                                                 "/api/users/*/status",
@@ -77,7 +83,8 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
 
                                                 .requestMatchers(
-                                                                "/api/organizations/new")
+                                                                "/api/organizations/new",
+                                                                "/api/organizations/created")
                                                 .hasRole("ORGADMIN")
 
                                                 .requestMatchers(
@@ -114,15 +121,12 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-
-                configuration.setAllowedOrigins(List.of("http://localhost:4200"));
-                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(Arrays.asList("*"));
                 configuration.setAllowCredentials(true);
-
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
-
                 return source;
         }
 }

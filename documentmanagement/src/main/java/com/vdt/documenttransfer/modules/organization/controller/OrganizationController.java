@@ -43,7 +43,8 @@ public class OrganizationController {
 
     @GetMapping("/{status}")
     public ResponseEntity<?> getAllByStatus(@AuthenticationPrincipal(expression = "user") User user,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @PathVariable String status) {
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+            @PathVariable String status) {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
@@ -55,7 +56,6 @@ public class OrganizationController {
                     .body("Error: " + e.getMessage());
         }
     }
-    
 
     @PostMapping("/new")
     public ResponseEntity<?> signNewOrg(@RequestBody NewOrgRequest request,
@@ -115,7 +115,8 @@ public class OrganizationController {
     }
 
     @PatchMapping("/{id}/softDelete")
-    public ResponseEntity<?> softDeleteOrg(@PathVariable Integer id, @AuthenticationPrincipal(expression = "user") User user) {
+    public ResponseEntity<?> softDeleteOrg(@PathVariable Integer id,
+            @AuthenticationPrincipal(expression = "user") User user) {
         try {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
@@ -131,4 +132,30 @@ public class OrganizationController {
                     .body("Error: " + e.getMessage());
         }
     }
+
+    @GetMapping("/created")
+    public ResponseEntity<?> getCreatedOrg(
+            @AuthenticationPrincipal(expression = "user") User user) {
+        try {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
+            }
+
+            if (!user.getStatus().name().equals("ACTIVE")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tài khoản của bạn chưa được kích hoạt");
+            }   
+
+            if(user.getOrganization() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chưa có đơn vị liên thông");
+            }
+
+            Integer orgId = user.getOrganization().getId();
+
+            return ResponseEntity.ok(organizationService.findById(orgId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
 }

@@ -31,6 +31,5 @@ public class RegisterRequest {
     @NotNull(message = "Role không được để trống")
     private Integer roleId;
 
-    @NotNull(message = "Organization không được để trống")
     private Integer organizationId;
 }

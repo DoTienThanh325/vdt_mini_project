@@ -51,10 +51,19 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
         DocumentTransfer savedTransfer = null;
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
+
+        if (!document.getStatus().name().equals("ACTIVE")) {
+            throw new RuntimeException("Đơn vị này đang bị dừng hoạt động vui lòng chọn đơn vị khác");
+        }
+
         Organization receiverOrg = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
 
         InterconnectedSystem receiverSystem = receiverOrg.getSystem();
+
+        if(!receiverSystem.getStatus().name().equals("ACTIVE")) {
+            throw new RuntimeException("Hệ thống đang bị dừng hoạt động không thể gửi văn bản, tài liệu");
+        }
 
         if (!clerk.getOrganization().getId().equals(document.getSenderOrganization().getId())) {
             throw new RuntimeException("Tài liệu không thuộc đơn vị của bạn");
@@ -292,7 +301,7 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
                         .status(transfer.getStatus().name())
                         .creatdAt(transfer.getDocument().getCreatedAt())
                         .updatedAt(transfer.getDocument().getUpdatedAt())
-                        .message(null)   
+                        .message(null)
                         .build())
                 .toList();
 
@@ -314,7 +323,8 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
 
         DocumentTransfer.Status transferStatus = DocumentTransfer.Status.valueOf(status);
 
-        Page<DocumentTransfer> documentTransferPage = documentTransferRepository.findByStatusAndReceiverOrganization_Id(transferStatus, orgId, pageable);
+        Page<DocumentTransfer> documentTransferPage = documentTransferRepository
+                .findByStatusAndReceiverOrganization_Id(transferStatus, orgId, pageable);
 
         List<DocumentResponse> content = documentTransferPage.getContent().stream()
                 .map(transfer -> DocumentResponse.builder()

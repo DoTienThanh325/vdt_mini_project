@@ -34,7 +34,7 @@ public class EntityToDTO {
             transfers = documentTransfers.stream().map(tranfer -> DocumentTransferResponse.builder()
                     .responseContent(tranfer.getResponseContent())
                     .status(tranfer.getStatus().name())
-                    .senderUsername(tranfer.getSender().getUsername())
+                    .senderUsername(tranfer.getSender().getFullName())
                     .receiverOrgCode(tranfer.getReceiverOrganization().getOrgCode())
                     .receiverOrgName(tranfer.getReceiverOrganization().getOrgName())
                     .receiverUsername(tranfer.getReceiver() != null ? tranfer.getReceiver().getUsername() : null)
