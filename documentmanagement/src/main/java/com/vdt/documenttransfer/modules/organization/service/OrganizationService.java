@@ -19,4 +19,6 @@ public interface OrganizationService {
     PageResponse<OrgResponse> findByStatus(int page, int size, String status);
 
     OrgResponse softDeleteOrg(Integer id);
+
+    OrgResponse findById(Integer id);
 }

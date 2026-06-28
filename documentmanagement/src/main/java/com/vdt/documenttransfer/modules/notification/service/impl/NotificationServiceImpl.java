@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.vdt.documenttransfer.modules.notification.dto.NotificationRedisDto;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     private String buildRedisKey(Integer userId, LocalDate date) {
@@ -46,6 +48,11 @@ public class NotificationServiceImpl implements NotificationService {
 
         // Redis tự xóa notification sau 1 ngày
         redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
+
+        messagingTemplate.convertAndSendToUser(
+                userId.toString(),
+                "/queue/notifications",
+                notification);
 
         return notification;
     }

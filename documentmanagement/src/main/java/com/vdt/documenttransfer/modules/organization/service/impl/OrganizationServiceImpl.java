@@ -205,7 +205,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Override
     public OrgResponse softDeleteOrg(Integer id) {
         Organization organization = organizationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
 
         LocalDateTime now = LocalDateTime.now();
         organization.setStatus(Organization.Status.DELETED);
@@ -214,5 +214,13 @@ public class OrganizationServiceImpl implements OrganizationService {
         Organization savedOrg = organizationRepository.save(organization);
 
         return entityToResponse(savedOrg, "Xoá đơn vị liên thông thành công");
+    }
+
+    @Override
+    public OrgResponse findById(Integer id) {
+        Organization organization = organizationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn vị liên thông"));
+
+        return entityToResponse(organization, "Tạo đơn vị liên thông thành công");
     }
 }

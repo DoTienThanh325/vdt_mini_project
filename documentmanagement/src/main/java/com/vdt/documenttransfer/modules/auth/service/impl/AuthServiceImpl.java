@@ -79,8 +79,16 @@ public class AuthServiceImpl implements AuthService {
                 Role role = roleRepository.findById(request.getRoleId())
                                 .orElseThrow(() -> new RuntimeException("Role không tồn tại"));
 
-                Organization organization = organizationRepository.findById(request.getOrganizationId())
-                                .orElseThrow(() -> new RuntimeException("Organization không tồn tại"));
+                Organization organization = null;
+                if (request.getOrganizationId() != null) {
+                        organization = organizationRepository.findById(request.getOrganizationId())
+                                        .orElseThrow(() -> new RuntimeException("Organization không tồn tại"));
+
+                        if (!organization.getStatus().name().equals("ACTIVE")) {
+                                throw new RuntimeException(
+                                                "Đơn vị này đang tạm dừng hoạt động vui lòng chọn đơn vị khác");
+                        }
+                }
 
                 LocalDateTime now = LocalDateTime.now();
 
@@ -105,7 +113,9 @@ public class AuthServiceImpl implements AuthService {
                                 .fullName(savedUser.getFullName())
                                 .email(savedUser.getEmail())
                                 .role(savedUser.getRole().getRoleCode())
-                                .organization(savedUser.getOrganization().getOrgName())
+                                .organization(savedUser.getOrganization() != null
+                                                ? savedUser.getOrganization().getOrgName()
+                                                : null)
                                 .status(savedUser.getStatus().name())
                                 .message("Đăng ký tài khoản thành công")
                                 .build();

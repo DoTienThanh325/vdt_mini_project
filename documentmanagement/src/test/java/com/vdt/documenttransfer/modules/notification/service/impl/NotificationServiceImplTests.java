@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.vdt.documenttransfer.modules.notification.dto.NotificationRedisDto;
 
@@ -27,12 +28,25 @@ class NotificationServiceImplTests {
     @Mock
     private ListOperations<String, Object> listOperations;
 
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
+
     private NotificationServiceImpl notificationService;
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationServiceImpl(redisTemplate);
+        notificationService = new NotificationServiceImpl(redisTemplate, messagingTemplate);
         when(redisTemplate.opsForList()).thenReturn(listOperations);
+    }
+
+    @Test
+    void createNotificationStoresAndSendsToRecipient() {
+        NotificationRedisDto result = notificationService.createNotification(7, "Title", "Content");
+        String redisKey = "notifications:user:7:date:" + result.getCreatedAt().toLocalDate();
+
+        verify(listOperations).leftPush(redisKey, result);
+        verify(redisTemplate).expire(redisKey, 1, java.util.concurrent.TimeUnit.DAYS);
+        verify(messagingTemplate).convertAndSendToUser("7", "/queue/notifications", result);
     }
 
     @Test
