@@ -80,8 +80,8 @@ INSERT INTO organizations (
         updated_at
     )
 VALUES (
-        'VT-HN',
-        'Văn thư Hà Nội',
+        'ORG_HN',
+        'Viettel Hà Nội',
         'Hà Nội',
         'vanthu.hn@example.com',
         '0240000001',
@@ -91,8 +91,8 @@ VALUES (
         NULL
     ),
     (
-        'VT-HP',
-        'Văn thư Hải Phòng',
+        'ORG_HP',
+        'Viettel Hải Phòng',
         'Hải Phòng',
         'vanthu.hp@example.com',
         '0225000001',
@@ -102,8 +102,8 @@ VALUES (
         NULL
     ),
     (
-        'VT-DN',
-        'Văn thư Đà Nẵng',
+        'ORG_DN',
+        'Viettel Đà Nẵng',
         'Đà Nẵng',
         'vanthu.dn@example.com',
         '0236000001',
@@ -129,17 +129,17 @@ VALUES(system_id),
 SET @org_hn = (
         SELECT id
         FROM organizations
-        WHERE org_code = 'VT-HN'
+        WHERE org_code = 'ORG_HN'
     );
 SET @org_hp = (
         SELECT id
         FROM organizations
-        WHERE org_code = 'VT-HP'
+        WHERE org_code = 'ORG_HP'
     );
 SET @org_dn = (
         SELECT id
         FROM organizations
-        WHERE org_code = 'VT-DN'
+        WHERE org_code = 'ORG_DN'
     );
 -- =====================================================
 -- 3. ROLES

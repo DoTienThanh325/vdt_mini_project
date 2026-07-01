@@ -17,6 +17,9 @@ import com.vdt.documenttransfer.modules.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,14 +40,25 @@ public class AuthServiceImpl implements AuthService {
 
         @Override
         public LoginResponse login(LoginRequest request) {
-
-                authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(
-                                                request.getUsername(),
-                                                request.getPassword()));
+                try {
+                        authenticationManager.authenticate(
+                                        new UsernamePasswordAuthenticationToken(
+                                                        request.getUsername(),
+                                                        request.getPassword()));
+                } catch (BadCredentialsException e) {
+                        throw new RuntimeException("Tên đăng nhập hoặc mật khẩu không đúng");
+                } catch (DisabledException e) {
+                        throw new RuntimeException("Tài khoản đã bị vô hiệu hóa");
+                } catch (LockedException e) {
+                        throw new RuntimeException("Tài khoản đã bị khóa");
+                }
 
                 User user = userRepository.findByUsername(request.getUsername())
                                 .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+
+                if (!user.getStatus().name().equals("ACTIVE")) {
+                        throw new RuntimeException("Tài khoản chưa được kích hoạt");
+                }
 
                 CustomUserDetails userDetails = new CustomUserDetails(user);
 
@@ -61,6 +75,7 @@ public class AuthServiceImpl implements AuthService {
                                 .username(user.getUsername())
                                 .fullName(user.getFullName())
                                 .role(user.getRole().getRoleCode())
+                                .orgCode(user.getOrganization() != null ? user.getOrganization().getOrgCode() : null)
                                 .build();
         }
 

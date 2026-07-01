@@ -16,13 +16,26 @@ const TECHNICAL_ERROR_PATTERNS = [
   /^<html/i,
 ];
 
+const UNREADABLE_ERROR_PATTERNS = [
+  /[\r\n\t]/,
+  /https?:\/\//i,
+  /\b(?:exception|stack trace|sqlstate|org\.springframework|java\.)\b/i,
+  /\bat\s+[\w.$]+\([^)]*\)/i,
+  /^\s*[{[]/,
+  /<\/?[a-z][^>]*>/i,
+  /^[A-Z0-9_.:-]+$/,
+  /\uFFFD/,
+];
+
 export function getApiErrorMessage(error: HttpErrorResponse, operationFallback: string): string {
   const backendMessage = extractBackendMessage(error.error);
 
   if (
     !backendMessage ||
     error.status === 0 ||
-    TECHNICAL_ERROR_PATTERNS.some((pattern) => pattern.test(backendMessage))
+    backendMessage.length > 200 ||
+    TECHNICAL_ERROR_PATTERNS.some((pattern) => pattern.test(backendMessage)) ||
+    UNREADABLE_ERROR_PATTERNS.some((pattern) => pattern.test(backendMessage))
   ) {
     return operationFallback;
   }

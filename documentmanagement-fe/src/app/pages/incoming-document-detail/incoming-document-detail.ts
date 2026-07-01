@@ -52,8 +52,10 @@ export class IncomingDocumentDetail implements OnInit {
 
     const detailedTransfers = this.documentTransfers(this.document);
     const incomingTransferStatus =
-      detailedTransfers.find((transfer) =>
-        ['SENT', 'RECEIVED', 'RESPONDED', 'FAILED'].includes(transfer.status),
+      detailedTransfers.find(
+        (transfer) =>
+          this.isCurrentOrganizationTransfer(transfer) &&
+          ['SENT', 'RECEIVED', 'RESPONDED', 'FAILED'].includes(transfer.status),
       )?.status || '';
     const transfers =
       this.document?.tranfers ||
@@ -82,6 +84,10 @@ export class IncomingDocumentDetail implements OnInit {
     return (localStorage.getItem('role') || '').trim().toUpperCase().replace(/^ROLE_/, '');
   }
 
+  get orgCode(): string {
+    return (localStorage.getItem('orgCode') || '').trim().toUpperCase();
+  }
+
   get isClerk(): boolean {
     return this.role === 'CLERK';
   }
@@ -96,9 +102,12 @@ export class IncomingDocumentDetail implements OnInit {
 
   get responseTransfer(): DocumentTransferResponse | null {
     return (
-      this.latestResponse ||
+      (this.latestResponse && this.isCurrentOrganizationTransfer(this.latestResponse)
+        ? this.latestResponse
+        : null) ||
       this.documentTransfers(this.displayDocument).find(
-        (transfer) => !!transfer.responseContent?.trim(),
+        (transfer) =>
+          this.isCurrentOrganizationTransfer(transfer) && !!transfer.responseContent?.trim(),
       ) ||
       null
     );
@@ -330,6 +339,10 @@ export class IncomingDocumentDetail implements OnInit {
     if (this.document) {
       this.document = { ...this.document, status };
     }
+  }
+
+  private isCurrentOrganizationTransfer(transfer: DocumentTransferResponse): boolean {
+    return !!this.orgCode && transfer.receiverOrgCode.trim().toUpperCase() === this.orgCode;
   }
 
   private cleanErrorMessage(message: string): string {

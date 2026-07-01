@@ -20,6 +20,38 @@ button {
   font: inherit;
 }
 
+.theme-toggle {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #101010;
+  border-radius: 50%;
+  background: #fff;
+  color: #101010;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  background: #101010;
+  color: #fff;
+  transform: rotate(8deg);
+}
+
+.theme-toggle-floating {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+}
+
+.mobile-theme-toggle {
+  margin-left: auto;
+}
+
 .app-layout {
   min-height: 100dvh;
   background: #f7f9fc;
@@ -734,4 +766,833 @@ h1 {
     margin-right: 18px;
     margin-left: 18px;
   }
+}
+
+:host-context([data-theme="dark"]) {
+  --navy: #f7f9fb;
+  --muted: #a8b3bf;
+  --border: #344552;
+}
+
+:host-context([data-theme="dark"]) .app-layout,
+:host-context([data-theme="dark"]) .main-content,
+:host-context([data-theme="dark"]) .sidebar,
+:host-context([data-theme="dark"]) .mobile-header {
+  border-color: #344552;
+  background: #101820;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .nav-item,
+:host-context([data-theme="dark"]) .submenu-item {
+  color: #e3e8ed;
+}
+
+:host-context([data-theme="dark"]) .nav-item:hover,
+:host-context([data-theme="dark"]) .submenu-item:hover,
+:host-context([data-theme="dark"]) .submenu-item.active {
+  background: #17232d;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .nav-item.active {
+  background: #f7f9fb;
+  color: #0a1317;
+}
+
+:host-context([data-theme="dark"]) .role-badge,
+:host-context([data-theme="dark"]) .theme-toggle,
+:host-context([data-theme="dark"]) .notification-button,
+:host-context([data-theme="dark"]) .menu-toggle,
+:host-context([data-theme="dark"]) .notification-popover,
+:host-context([data-theme="dark"]) .notification-modal,
+:host-context([data-theme="dark"]) .notification-item {
+  border-color: #344552;
+  background: #17232d;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .notification-item:hover,
+:host-context([data-theme="dark"]) .notification-modal-header button,
+:host-context([data-theme="dark"]) .notification-created-at {
+  background: #22313d;
+  color: #f7f9fb;
+}
+
+/* Final Claude-inspired design alignment from src/design/design.md. */
+:host {
+  --sidebar-width: 272px;
+  --primary: #cc785c;
+  --primary-dark: #a9583e;
+  --primary-soft: #efe9de;
+  --navy: #141413;
+  --muted: #6c6a64;
+  --border: #e6dfd8;
+  color: var(--navy);
+}
+
+.app-layout,
+.main-content {
+  background: #faf9f5;
+}
+
+.sidebar {
+  border-color: var(--border);
+  background: #faf9f5;
+}
+
+.brand {
+  min-height: 80px;
+  padding: 18px 20px;
+  border-color: var(--border);
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 0;
+  background: transparent;
+  color: #cc785c;
+}
+
+.brand-mark svg {
+  display: none;
+}
+
+.brand-mark::before {
+  content: "✣";
+  font-size: 32px;
+  line-height: 1;
+}
+
+.brand strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.brand span {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  padding: 20px 14px;
+}
+
+.nav-label {
+  color: #8e8b82;
+  font-family: Inter, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+}
+
+.nav-item {
+  min-height: 44px;
+  margin: 3px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #3d3d3a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: transparent;
+}
+
+.nav-item.active {
+  background: #efe9de;
+  color: #141413;
+}
+
+.nav-item.active > svg:first-child {
+  color: #cc785c;
+}
+
+.submenu {
+  margin-left: 22px;
+}
+
+.submenu::before {
+  background: #e6dfd8;
+}
+
+.submenu-item {
+  border-radius: 6px;
+  color: #6c6a64;
+}
+
+.submenu-item:hover {
+  background: transparent;
+  color: #141413;
+}
+
+.submenu-item.active {
+  background: #efe9de;
+  color: #141413;
+}
+
+.submenu-item.active .submenu-dot {
+  background: #cc785c;
+  box-shadow: none;
+}
+
+.sidebar-footer {
+  border-color: var(--border);
+}
+
+.user-avatar {
+  background: #cc785c;
+  color: #fff;
+}
+
+.main-content {
+  padding: 40px clamp(28px, 4vw, 56px) 64px;
+}
+
+.content-header,
+.route-content {
+  max-width: 1200px;
+}
+
+.content-header {
+  margin-bottom: 32px;
+}
+
+.breadcrumb {
+  color: #8e8b82;
+  font-family: Inter, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 4vw, 48px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.content-description {
+  color: #6c6a64;
+  font-size: 14px;
+}
+
+.role-badge {
+  padding: 7px 12px;
+  border-color: #e6dfd8;
+  background: #efe9de;
+  color: #141413;
+  font-weight: 500;
+}
+
+.theme-toggle,
+.notification-button {
+  width: 40px;
+  height: 40px;
+  border-color: #e6dfd8;
+  border-radius: 50%;
+  background: #faf9f5;
+  color: #141413;
+}
+
+.theme-toggle:hover,
+.notification-button:hover,
+.notification-button:focus-visible {
+  border-color: #cc785c;
+  background: #faf9f5;
+  color: #cc785c;
+  transform: none;
+}
+
+.notification-count {
+  border-color: #faf9f5;
+  background: #cc785c;
+}
+
+.notification-popover,
+.notification-modal {
+  border-color: #e6dfd8;
+  border-radius: 12px;
+  background: #faf9f5;
+  box-shadow: 0 1px 3px rgba(20, 20, 19, 0.08);
+}
+
+.notification-popover-header span {
+  background: #efe9de;
+  color: #141413;
+}
+
+.notification-item:hover {
+  background: #f5f0e8;
+}
+
+.notification-unread-dot {
+  background: #cc785c;
+}
+
+.notification-summary small,
+.notification-modal-label {
+  color: #cc785c;
+  font-family: Inter, "Segoe UI", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.notification-empty svg {
+  background: #efe9de;
+  color: #5db872;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    height: 64px;
+    border-color: #e6dfd8;
+    background: rgba(250, 249, 245, 0.96);
+  }
+
+  .menu-toggle {
+    width: 40px;
+    height: 40px;
+    border-color: #e6dfd8;
+    background: #faf9f5;
+  }
+
+  .main-content {
+    padding: 32px 24px 48px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .main-content {
+    padding: 28px 16px 40px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+}
+
+:host-context([data-theme="dark"]) {
+  --navy: #faf9f5;
+  --muted: #a09d96;
+  --border: #3b3935;
+}
+
+:host-context([data-theme="dark"]) .app-layout,
+:host-context([data-theme="dark"]) .main-content,
+:host-context([data-theme="dark"]) .sidebar {
+  background: #181715;
+}
+
+:host-context([data-theme="dark"]) .nav-item.active,
+:host-context([data-theme="dark"]) .submenu-item.active,
+:host-context([data-theme="dark"]) .role-badge,
+:host-context([data-theme="dark"]) .notification-popover-header span {
+  background: #252320;
+  color: #faf9f5;
+}
+
+:host-context([data-theme="dark"]) .nav-item,
+:host-context([data-theme="dark"]) .submenu-item {
+  color: #d2cfc7;
+}
+
+:host-context([data-theme="dark"]) .theme-toggle,
+:host-context([data-theme="dark"]) .notification-button,
+:host-context([data-theme="dark"]) .menu-toggle {
+  border-color: #3b3935;
+  background: #181715;
+  color: #faf9f5;
+}
+
+:host-context([data-theme="dark"]) .mobile-header,
+:host-context([data-theme="dark"]) .notification-popover,
+:host-context([data-theme="dark"]) .notification-modal,
+:host-context([data-theme="dark"]) .notification-item {
+  border-color: #3b3935;
+  background: #181715;
+  color: #faf9f5;
+}
+
+:host-context([data-theme="dark"]) .notification-item:hover {
+  background: #252320;
+}
+
+:host-context([data-theme="dark"]) {
+  color: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .app-layout,
+:host-context([data-theme="dark"]) .main-content {
+  background: #161616;
+}
+
+:host-context([data-theme="dark"]) .sidebar {
+  border-color: #42423d;
+  background: #242420;
+}
+
+:host-context([data-theme="dark"]) .brand,
+:host-context([data-theme="dark"]) .sidebar-footer {
+  border-color: #42423d;
+  color: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .brand span,
+:host-context([data-theme="dark"]) .nav-label,
+:host-context([data-theme="dark"]) .user-info span {
+  color: #aaa9a1;
+}
+
+:host-context([data-theme="dark"]) .nav-item {
+  color: #e5e3dc;
+}
+
+:host-context([data-theme="dark"]) .nav-item:hover,
+:host-context([data-theme="dark"]) .submenu-item:hover {
+  background: #34342f;
+}
+
+:host-context([data-theme="dark"]) .nav-item.active {
+  background: #d9f99d;
+  color: #101010;
+}
+
+:host-context([data-theme="dark"]) .submenu-item {
+  color: #bdbcb4;
+}
+
+:host-context([data-theme="dark"]) .submenu-item.active {
+  background: #3b3b35;
+  color: #fff;
+}
+
+:host-context([data-theme="dark"]) .mobile-header {
+  border-color: #42423d;
+  background: rgba(22, 22, 22, 0.94);
+  color: #fff;
+}
+
+:host-context([data-theme="dark"]) .menu-toggle,
+:host-context([data-theme="dark"]) .theme-toggle,
+:host-context([data-theme="dark"]) .notification-button {
+  border-color: #e8e6df;
+  background: #242420;
+  color: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .menu-toggle span {
+  background: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .theme-toggle:hover,
+:host-context([data-theme="dark"]) .notification-button:hover {
+  background: #f6f4ed;
+  color: #101010;
+}
+
+:host-context([data-theme="dark"]) .breadcrumb,
+:host-context([data-theme="dark"]) .content-description {
+  color: #aaa9a1;
+}
+
+:host-context([data-theme="dark"]) .role-badge {
+  border-color: #e8e6df;
+  background: #242420;
+  color: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .notification-popover,
+:host-context([data-theme="dark"]) .notification-modal {
+  border-color: #42423d;
+  background: #242420;
+  color: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .notification-popover-header,
+:host-context([data-theme="dark"]) .notification-modal-header,
+:host-context([data-theme="dark"]) .notification-item {
+  border-color: #42423d;
+}
+
+:host-context([data-theme="dark"]) .notification-item {
+  background: #242420;
+  color: #f6f4ed;
+}
+
+:host-context([data-theme="dark"]) .notification-item:hover {
+  background: #34342f;
+}
+
+:host-context([data-theme="dark"]) .notification-modal-header button,
+:host-context([data-theme="dark"]) .notification-created-at {
+  background: #34342f;
+  color: #e5e3dc;
+}
+
+/* Final Meta-inspired shell from the current src/design/design.md. */
+:host {
+  --sidebar-width: 272px;
+  --primary: #0064e0;
+  --primary-dark: #0143b5;
+  --primary-soft: #f1f4f7;
+  --navy: #0a1317;
+  --muted: #67788a;
+  --border: #d8dfe6;
+  font-family: Montserrat, Helvetica, Arial, "Noto Sans", sans-serif;
+}
+
+.app-layout {
+  background: #fff;
+}
+
+.sidebar {
+  border-color: var(--border);
+  background: #fff;
+}
+
+.brand {
+  min-height: 94px;
+  padding: 22px 20px;
+  border-color: var(--border);
+}
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #0064e0;
+}
+
+.brand-mark svg {
+  display: block;
+  width: 25px;
+  height: 25px;
+  color: #fff;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.brand-mark::before {
+  content: none;
+}
+
+.brand strong {
+  font-size: 15px;
+  letter-spacing: -0.015em;
+}
+
+.brand span {
+  color: #67788a;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  padding: 24px 16px;
+}
+
+.nav-label {
+  color: #67788a;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.nav-item {
+  min-height: 48px;
+  margin: 5px 0;
+  padding: 12px 14px;
+  border-radius: 999px;
+  color: #1c2b33;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.nav-item:hover {
+  background: #f1f4f7;
+}
+
+.nav-item.active {
+  background: #101010;
+  color: #fff;
+}
+
+.submenu {
+  margin-left: 25px;
+  padding-left: 16px;
+}
+
+.submenu::before {
+  background: #d8dfe6;
+}
+
+.submenu-item {
+  min-height: 39px;
+  border-radius: 999px;
+  color: #67788a;
+}
+
+.submenu-item:hover {
+  background: #f1f4f7;
+}
+
+.submenu-item.active {
+  background: #fff;
+  color: #101010;
+}
+
+.submenu-item.active .submenu-dot {
+  background: #0064e0;
+  box-shadow: 0 0 0 3px rgba(0, 100, 224, 0.12);
+}
+
+.sidebar-footer {
+  padding: 18px 16px;
+  border-color: var(--border);
+}
+
+.user-avatar {
+  background: #0064e0;
+  color: #fff;
+}
+
+.logout-button {
+  border-radius: 50%;
+}
+
+.main-content {
+  padding: 46px clamp(28px, 4vw, 64px) 64px;
+  background: #fff;
+}
+
+.content-header {
+  max-width: 1280px;
+  margin-bottom: 34px;
+}
+
+.breadcrumb {
+  margin-bottom: 10px;
+  color: #67788a;
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.breadcrumb span {
+  color: #9a9a92;
+}
+
+h1 {
+  font-family: Montserrat, Helvetica, Arial, "Noto Sans", sans-serif;
+  font-variant-alternates: styleset(ss01, ss02);
+  font-size: clamp(36px, 4vw, 48px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.17;
+}
+
+.content-description {
+  max-width: 600px;
+  margin-top: 12px;
+  color: #67788a;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.role-badge {
+  padding: 9px 16px;
+  border: 1px solid #d8dfe6;
+  background: #fff;
+  color: #101010;
+  font-size: 11px;
+}
+
+.notification-button {
+  width: 44px;
+  height: 44px;
+  border-color: #101010;
+  border-radius: 50%;
+  color: #101010;
+}
+
+.notification-button:hover,
+.notification-button:focus-visible {
+  border-color: #101010;
+  background: #101010;
+  color: #fff;
+}
+
+.notification-count {
+  border-color: #fff;
+  background: #0064e0;
+}
+
+.notification-popover {
+  border-color: var(--border);
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(20, 22, 26, 0.3);
+}
+
+.notification-popover-header span {
+  background: #f1f4f7;
+  color: #101010;
+}
+
+.notification-item:hover {
+  background: #f1f4f7;
+}
+
+.notification-unread-dot {
+  background: #0064e0;
+}
+
+.notification-summary small,
+.notification-modal-label {
+  color: #0143b5;
+  font-family: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.notification-empty svg {
+  background: #f1f4f7;
+  color: #168653;
+}
+
+.notification-modal {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.notification-modal-header button {
+  border-radius: 50%;
+  background: #f1f4f7;
+}
+
+.route-content {
+  max-width: 1280px;
+}
+
+@media (max-width: 900px) {
+  .mobile-header {
+    height: 68px;
+    padding: 0 20px;
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(14px);
+  }
+
+  .menu-toggle {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #101010;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .mobile-brand {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+  }
+
+  .sidebar {
+    width: min(86vw, var(--sidebar-width));
+  }
+
+  .sidebar-backdrop {
+    background: rgba(16, 16, 16, 0.55);
+    backdrop-filter: blur(3px);
+  }
+
+  .main-content {
+    padding: 34px 24px 48px;
+  }
+}
+
+@media (max-width: 560px) {
+  .main-content {
+    padding: 28px 16px 40px;
+  }
+
+  .content-header {
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-size: 34px;
+  }
+
+  .content-description {
+    font-size: 14px;
+  }
+
+  .notification-button {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Dark extension; Meta's source document does not define official dark tokens. */
+:host-context([data-theme="dark"]) {
+  --navy: #f7f9fb;
+  --muted: #a8b3bf;
+  --border: #344552;
+}
+
+:host-context([data-theme="dark"]) .app-layout,
+:host-context([data-theme="dark"]) .main-content,
+:host-context([data-theme="dark"]) .sidebar,
+:host-context([data-theme="dark"]) .mobile-header {
+  border-color: #344552;
+  background: #101820;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .nav-item,
+:host-context([data-theme="dark"]) .submenu-item {
+  color: #e3e8ed;
+}
+
+:host-context([data-theme="dark"]) .nav-item:hover,
+:host-context([data-theme="dark"]) .submenu-item:hover,
+:host-context([data-theme="dark"]) .submenu-item.active {
+  background: #17232d;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .nav-item.active {
+  background: #f7f9fb;
+  color: #0a1317;
+}
+
+:host-context([data-theme="dark"]) .role-badge,
+:host-context([data-theme="dark"]) .theme-toggle,
+:host-context([data-theme="dark"]) .notification-button,
+:host-context([data-theme="dark"]) .menu-toggle,
+:host-context([data-theme="dark"]) .notification-popover,
+:host-context([data-theme="dark"]) .notification-modal,
+:host-context([data-theme="dark"]) .notification-item {
+  border-color: #344552;
+  background: #17232d;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .notification-item:hover,
+:host-context([data-theme="dark"]) .notification-modal-header button,
+:host-context([data-theme="dark"]) .notification-created-at {
+  background: #22313d;
+  color: #f7f9fb;
 }

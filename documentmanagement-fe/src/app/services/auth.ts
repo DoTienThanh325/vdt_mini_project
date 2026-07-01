@@ -23,6 +23,7 @@ export class AuthService {
           localStorage.setItem('username', response.username);
           localStorage.setItem('fullName', response.fullName);
           localStorage.setItem('role', response.role);
+          localStorage.setItem('orgCode', response.orgCode);
         }),
         catchError((error) => this.handleError(error))
       );
@@ -34,6 +35,7 @@ export class AuthService {
     localStorage.removeItem('username');
     localStorage.removeItem('fullName');
     localStorage.removeItem('role');
+    localStorage.removeItem('orgCode');
     localStorage.removeItem('organizationId');
   }
 

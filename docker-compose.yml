@@ -1,0 +1,139 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./documentmanagement
+      dockerfile: Dockerfile
+    container_name: documenttransfer-backend
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      SPRING_PROFILES_ACTIVE: prod
+
+      DB_URL: jdbc:mariadb://mariadb:3306/document_management_db
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: 86400000
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      FILE_UPLOAD_DIR: /app/uploads
+      LOG_PATH: /app/logs
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - mariadb
+      - redis
+      - logstash
+    networks:
+      - app-network
+      - elk-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./documentmanagement-fe
+      dockerfile: Dockerfile
+    container_name: documenttransfer-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:11.4
+    container_name: documenttransfer-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: document_management_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4
+    container_name: documenttransfer-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - elk-network
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+    restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.0
+    container_name: logstash
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    volumes:
+      - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+    restart: unless-stopped
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.15.0
+    container_name: filebeat
+    user: root
+    command: [ "--strict.perms=false" ]
+    volumes:
+      - ./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/app/logs:ro
+    depends_on:
+      - logstash
+    networks:
+      - elk-network
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+  elasticsearch_data:
+
+networks:
+  app-network:
+    driver: bridge
+  elk-network:
+    driver: bridge

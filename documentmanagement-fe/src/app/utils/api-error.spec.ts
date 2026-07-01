@@ -37,4 +37,31 @@ describe('getApiErrorMessage', () => {
 
     expect(getApiErrorMessage(error, fallback)).toBe(fallback);
   });
+
+  it.each([
+    'java.lang.RuntimeException: Login failed',
+    'AUTHENTICATION_FAILED_001',
+    '{"message":"Login failed"}',
+    'Login failed\n\tat com.example.AuthService.login(AuthService.java:42)',
+  ])('replaces an unreadable backend message: %s', (message) => {
+    const error = new HttpErrorResponse({
+      status: 401,
+      error: { message },
+    });
+
+    expect(getApiErrorMessage(error, 'Đăng nhập không thành công')).toBe(
+      'Đăng nhập không thành công',
+    );
+  });
+
+  it('keeps a readable login message returned by the backend', () => {
+    const error = new HttpErrorResponse({
+      status: 401,
+      error: { message: 'Tên đăng nhập hoặc mật khẩu không đúng' },
+    });
+
+    expect(getApiErrorMessage(error, 'Đăng nhập không thành công')).toBe(
+      'Tên đăng nhập hoặc mật khẩu không đúng',
+    );
+  });
 });

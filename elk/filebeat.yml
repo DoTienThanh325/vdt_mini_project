@@ -1,17 +1,13 @@
 filebeat.inputs:
   - type: filestream
-    id: document-transfer-log
+    id: documenttransfer-logs
     enabled: true
     paths:
-      - /app/logs/app.log
-
+      - /app/logs/*.log
     parsers:
       - ndjson:
           target: ""
-          overwrite_keys: true
           add_error_key: true
 
 output.logstash:
   hosts: ["logstash:5044"]
-
-logging.level: info

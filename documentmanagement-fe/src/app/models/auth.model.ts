@@ -9,4 +9,5 @@ export interface LoginResponse {
     username: string;
     fullName: string;
     role: string;
+    orgCode: string;
 }

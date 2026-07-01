@@ -1,0 +1,114 @@
+/* Shared detail-page readability and information typography. */
+.detail-page .information-grid dd,
+.detail-page .detail-grid dd,
+.detail-page .response-detail dd,
+.detail-page .field strong,
+.detail-page .file-info strong,
+.detail-page td strong,
+.detail-card .information-grid dd,
+.detail-card .detail-grid dd,
+.detail-card .response-detail dd,
+.detail-card .field strong,
+.detail-card .file-info strong,
+.detail-card td strong {
+  color: var(--dms-body);
+  font-weight: 400;
+}
+
+.detail-page .information-grid dt,
+.detail-page .detail-grid dt,
+.detail-page .response-detail dt,
+.detail-page .field > span,
+.detail-page .field > label,
+.detail-card .information-grid dt,
+.detail-card .detail-grid dt,
+.detail-card .response-detail dt,
+.detail-card .field > span,
+.detail-card .field > label {
+  color: var(--dms-muted);
+  font-weight: 400;
+}
+
+[data-theme="dark"] body .detail-page,
+[data-theme="dark"] body .detail-container,
+[data-theme="dark"] body .detail-card,
+[data-theme="dark"] body .detail-content,
+[data-theme="dark"] body .detail-section,
+[data-theme="dark"] body .information-grid,
+[data-theme="dark"] body .detail-grid,
+[data-theme="dark"] body .response-detail {
+  border-color: var(--dms-line);
+  background-color: var(--dms-canvas);
+  color: var(--dms-body);
+}
+
+[data-theme="dark"] body .page-heading,
+[data-theme="dark"] body .card-heading {
+  border-color: var(--dms-line);
+  background-color: var(--dms-canvas);
+}
+
+[data-theme="dark"] body .page-heading h1,
+[data-theme="dark"] body .page-heading h2,
+[data-theme="dark"] body .card-heading h2,
+[data-theme="dark"] body .card-heading h3,
+[data-theme="dark"] body .detail-section h4 {
+  color: var(--dms-ink);
+}
+
+[data-theme="dark"] body .detail-page .information-grid dd,
+[data-theme="dark"] body .detail-page .detail-grid dd,
+[data-theme="dark"] body .detail-page .response-detail dd,
+[data-theme="dark"] body .detail-page .field strong,
+[data-theme="dark"] body .detail-page .file-info strong,
+[data-theme="dark"] body .detail-page td,
+[data-theme="dark"] body .detail-page td strong,
+[data-theme="dark"] body .detail-card .information-grid dd,
+[data-theme="dark"] body .detail-card .detail-grid dd,
+[data-theme="dark"] body .detail-card .response-detail dd,
+[data-theme="dark"] body .detail-card .field strong,
+[data-theme="dark"] body .detail-card .file-info strong,
+[data-theme="dark"] body .detail-card td,
+[data-theme="dark"] body .detail-card td strong {
+  color: #f7f9fb;
+  font-weight: 400;
+}
+
+[data-theme="dark"] body .detail-page .information-grid dt,
+[data-theme="dark"] body .detail-page .detail-grid dt,
+[data-theme="dark"] body .detail-page .response-detail dt,
+[data-theme="dark"] body .detail-page .field > span,
+[data-theme="dark"] body .detail-page .field > label,
+[data-theme="dark"] body .detail-card .information-grid dt,
+[data-theme="dark"] body .detail-card .detail-grid dt,
+[data-theme="dark"] body .detail-card .response-detail dt,
+[data-theme="dark"] body .detail-card .field > span,
+[data-theme="dark"] body .detail-card .field > label {
+  color: #a8b3bf;
+  font-weight: 400;
+}
+
+[data-theme="dark"] body .detail-page .field,
+[data-theme="dark"] body .detail-card .field,
+[data-theme="dark"] body .detail-page .information-grid > div,
+[data-theme="dark"] body .detail-card .information-grid > div,
+[data-theme="dark"] body .detail-page .response-detail > div,
+[data-theme="dark"] body .detail-card .response-detail > div {
+  border-color: var(--dms-line);
+}
+
+[data-theme="dark"] body .detail-page .action-section,
+[data-theme="dark"] body .detail-card .action-section,
+[data-theme="dark"] body .detail-page .file-item,
+[data-theme="dark"] body .detail-card .file-item,
+[data-theme="dark"] body .detail-page .card-actions,
+[data-theme="dark"] body .detail-card .card-actions {
+  border-color: var(--dms-line);
+  background-color: var(--dms-surface-soft);
+  color: var(--dms-body);
+}
+
+[data-theme="dark"] body .detail-page .back-button,
+[data-theme="dark"] body .detail-card .back-button {
+  color: var(--dms-ink);
+}

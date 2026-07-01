@@ -35,8 +35,9 @@
   padding: 12px 14px;
   border: 1px solid #d0d5dd;
   border-radius: 9px;
+  background-color: var(--dms-canvas, #fff) !important;
   outline: none;
-  color: #101828;
+  color: var(--dms-ink, #101828);
   font: inherit;
   line-height: 1.5;
 }
@@ -47,9 +48,11 @@
 }
 
 .response-section textarea:disabled {
-  background: #f2f4f7;
-  color: #98a2b3;
+  background-color: var(--dms-canvas, #fff) !important;
+  color: var(--dms-ink, #101828);
+  -webkit-text-fill-color: currentColor;
   cursor: not-allowed;
+  opacity: 1;
 }
 
 .response-hint {
@@ -90,4 +93,41 @@
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+:host-context([data-theme="dark"]) .response-section textarea,
+:host-context([data-theme="dark"]) .response-section textarea:disabled {
+  border: 1px solid #465966 !important;
+  background-color: #17232d !important;
+  color: #f7f9fb !important;
+  -webkit-text-fill-color: #f7f9fb !important;
+  box-shadow: none;
+  opacity: 1;
+}
+
+:host-context([data-theme="dark"]) .response-section textarea::placeholder {
+  color: #a8b3bf !important;
+  -webkit-text-fill-color: #a8b3bf !important;
+  opacity: 1;
+}
+
+:host-context([data-theme="dark"]) .response-section textarea:focus {
+  border-color: #0064e0 !important;
+  box-shadow: 0 0 0 3px rgba(0, 100, 224, 0.2) !important;
+}
+
+:host-context([data-theme="dark"]) .response-detail,
+:host-context([data-theme="dark"]) .response-detail > div {
+  border-color: #465966 !important;
+  background: #17232d !important;
+  color: #f7f9fb !important;
+}
+
+:host-context([data-theme="dark"]) .response-detail dt {
+  color: #b9c4ce !important;
+}
+
+:host-context([data-theme="dark"]) .response-detail dd {
+  color: #f7f9fb !important;
+  font-weight: 400;
 }

@@ -1,0 +1,23 @@
+# Env
+.env
+
+# Runtime folders
+logs/
+uploads/
+
+# Backend
+documentmanagement/target/
+documentmanagement/*.log
+
+# Frontend
+documentmanagement-fe/node_modules/
+documentmanagement-fe/dist/
+documentmanagement-fe/.angular/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

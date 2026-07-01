@@ -7,6 +7,7 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,9 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
     private final InterconnectedSystemRepository interconnectedSystemRepository;
     private final NotificationService notificationService;
 
+    @Value("${file.upload-dir}")
+    private String upload_dir;
+
     @Override
     @Transactional
     public DocumentTransferResponse transferDocument(Integer documentId, Integer orgId, User clerk,
@@ -52,8 +56,8 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
 
-        if (!document.getStatus().name().equals("ACTIVE")) {
-            throw new RuntimeException("Đơn vị này đang bị dừng hoạt động vui lòng chọn đơn vị khác");
+        if (!document.getStatus().name().equals("SIGNED")) {
+            throw new RuntimeException("Văn bản này chưa được ký vui lòng ký số trước khi gửi");
         }
 
         Organization receiverOrg = organizationRepository.findById(orgId)
@@ -61,7 +65,7 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
 
         InterconnectedSystem receiverSystem = receiverOrg.getSystem();
 
-        if(!receiverSystem.getStatus().name().equals("ACTIVE")) {
+        if (!receiverSystem.getStatus().name().equals("ACTIVE")) {
             throw new RuntimeException("Hệ thống đang bị dừng hoạt động không thể gửi văn bản, tài liệu");
         }
 
@@ -165,7 +169,7 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
 
     private String saveReceivedFile(ExternalDocumentFilePayload filePayload, String documentCode) {
         try {
-            String uploadDir = "D:/VDT_1/mini_project/documentmanagement/documentmanagement/uploads/received-documents/"
+            String uploadDir = upload_dir + "/received-documents/"
                     + documentCode;
 
             Files.createDirectories(Path.of(uploadDir));

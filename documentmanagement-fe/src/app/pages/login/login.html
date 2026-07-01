@@ -12,8 +12,28 @@
 
             <div class="form-group">
                 <label for="password">Mật khẩu</label>
-                <input id="password" type="password" name="password" [(ngModel)]="loginRequest.password"
-                    placeholder="Nhập password" />
+                <div class="password-field">
+                    <input id="password" [type]="showPassword ? 'text' : 'password'" name="password"
+                        [(ngModel)]="loginRequest.password" placeholder="Nhập mật khẩu"
+                        autocomplete="current-password" />
+                    <button class="password-toggle" type="button" (click)="togglePasswordVisibility()"
+                        [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                        [attr.aria-pressed]="showPassword"
+                        [title]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
+                        @if (showPassword) {
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 10.7a2 2 0 0 0 2.7 2.7"></path>
+                                <path d="M9.9 4.2A10.7 10.7 0 0 1 12 4c5.2 0 9 4.2 10 8a13.5 13.5 0 0 1-2.1 4.1M6.6 6.6A13.3 13.3 0 0 0 2 12c1 3.8 4.8 8 10 8 1.5 0 2.9-.4 4.1-1"></path>
+                            </svg>
+                        } @else {
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        }
+                    </button>
+                </div>
             </div>
 
             <div class="error-message" *ngIf="errorMessage">

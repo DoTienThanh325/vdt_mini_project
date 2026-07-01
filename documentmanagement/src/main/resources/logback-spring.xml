@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOG_PATH" value="D:/VDT_1/mini_project/documentmanagement/documentmanagement/logs"/>
+    <property name="LOG_PATH" value="${LOG_PATH:-logs}" />
     <property name="APP_NAME" value="document-transfer"/>
 
-    <!-- Log ra console để dễ nhìn khi dev -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n
-            </pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Log ra file dạng JSON để Filebeat đọc -->
     <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/app.log</file>
 
@@ -44,15 +40,15 @@
                     <excludeMdcKeyName>service_logger</excludeMdcKeyName>
                 </mdc>
 
-                <stackTrace>
-                    <fieldName>stack_trace</fieldName>
-                </stackTrace>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
 
                 <pattern>
                     <pattern>
                         {
-                            "logger": "%mdc{service_logger}",
-                            "app_name": "${APP_NAME}"
+                            "app_name": "${APP_NAME}",
+                            "log_type": "service_activity"
                         }
                     </pattern>
                 </pattern>

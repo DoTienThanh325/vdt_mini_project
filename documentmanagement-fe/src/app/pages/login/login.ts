@@ -21,11 +21,16 @@ export class LoginComponent {
 
   loading = false;
   errorMessage = '';
+  showPassword = false;
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) { }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   onLogin(): void {
     this.errorMessage = '';

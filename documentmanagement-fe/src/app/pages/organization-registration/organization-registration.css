@@ -316,6 +316,92 @@ select:disabled {
   animation: spin 700ms linear infinite;
 }
 
+:host-context([data-theme="dark"]) {
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .form-card,
+:host-context([data-theme="dark"]) .success-card,
+:host-context([data-theme="dark"]) .loading-card {
+  border-color: #344552;
+  background: #17232d;
+  color: #f7f9fb;
+  box-shadow: none;
+}
+
+:host-context([data-theme="dark"]) .form-heading,
+:host-context([data-theme="dark"]) .form-actions {
+  border-color: #344552;
+}
+
+:host-context([data-theme="dark"]) .loading-card,
+:host-context([data-theme="dark"]) .form-heading p:last-child,
+:host-context([data-theme="dark"]) .success-card > div > p:last-child,
+:host-context([data-theme="dark"]) .form-actions p,
+:host-context([data-theme="dark"]) .success-card dt {
+  color: #a8b3bf;
+}
+
+:host-context([data-theme="dark"]) label {
+  color: #e3e8ed;
+}
+
+:host-context([data-theme="dark"]) input,
+:host-context([data-theme="dark"]) select,
+:host-context([data-theme="dark"]) textarea {
+  border-color: #465966;
+  background: #101820;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) input::placeholder,
+:host-context([data-theme="dark"]) textarea::placeholder {
+  color: #7f8e9b;
+}
+
+:host-context([data-theme="dark"]) input:focus,
+:host-context([data-theme="dark"]) select:focus,
+:host-context([data-theme="dark"]) textarea:focus {
+  border-color: #2f81f7;
+  box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.2);
+}
+
+:host-context([data-theme="dark"]) select:disabled {
+  background: #22313d;
+  color: #a8b3bf;
+}
+
+:host-context([data-theme="dark"]) .success-icon {
+  background: #143c2b;
+  color: #75d69c;
+}
+
+:host-context([data-theme="dark"]) .success-card dl div {
+  border: 1px solid #344552;
+  background: #101820;
+}
+
+:host-context([data-theme="dark"]) .refresh-button {
+  border-color: #465966;
+  background: #22313d;
+  color: #f7f9fb;
+}
+
+:host-context([data-theme="dark"]) .refresh-button:hover:not(:disabled) {
+  border-color: #667b89;
+  background: #2a3b48;
+}
+
+:host-context([data-theme="dark"]) .status-badge.active {
+  background: #143c2b;
+  color: #75d69c;
+}
+
+:host-context([data-theme="dark"]) .status-badge.inactive {
+  background: #493513;
+  color: #f4c66a;
+}
+
 @media (max-width: 680px) {
   .form-heading,
   .form-grid,

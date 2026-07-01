@@ -22,4 +22,10 @@ describe('LoginComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should toggle password visibility', () => {
+    expect(component.showPassword).toBe(false);
+    component.togglePasswordVisibility();
+    expect(component.showPassword).toBe(true);
+  });
 });

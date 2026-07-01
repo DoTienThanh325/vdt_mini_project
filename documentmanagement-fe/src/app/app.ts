@@ -31,6 +31,7 @@ export class App implements OnInit, OnDestroy {
   selectedNotification: Notification | null = null;
   notificationError = '';
   markingNotificationId = '';
+  darkMode = false;
 
   private notificationsActive = false;
   private readonly destroy$ = new Subject<void>();
@@ -60,6 +61,7 @@ export class App implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.initializeTheme();
     this.updateLayoutState(this.router.url);
     this.router.events
       .pipe(
@@ -130,6 +132,11 @@ export class App implements OnInit, OnDestroy {
 
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  toggleTheme(): void {
+    this.darkMode = !this.darkMode;
+    this.applyTheme();
   }
 
   closeSidebar(): void {
@@ -219,5 +226,23 @@ export class App implements OnInit, OnDestroy {
       this.notificationService.disconnect();
       this.notificationService.clear();
     }
+  }
+
+  private initializeTheme(): void {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    this.darkMode =
+      savedTheme === 'dark' ||
+      (savedTheme === null && prefersDark);
+    this.applyTheme();
+  }
+
+  private applyTheme(): void {
+    const theme = this.darkMode ? 'dark' : 'light';
+    document.documentElement.dataset['theme'] = theme;
+    document.documentElement.style.colorScheme = theme;
+    localStorage.setItem('theme', theme);
   }
 }

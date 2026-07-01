@@ -112,6 +112,7 @@ public class DocumentFileServiceImpl implements DocumentFileService {
             return responses;
 
         } catch (IOException e) {
+            documentRepository.deleteById(documentId);
             throw new RuntimeException("Upload file thất bại: " + e.getMessage(), e);
         }
     }

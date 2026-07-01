@@ -34,6 +34,7 @@ export class NotificationService {
             ...notifications.filter((notification) => !currentIds.has(notification.id)),
           ]);
         }),
+        tap({ error: () => this.notificationsSubject.next([]) }),
         catchError((error) => this.handleError(error, 'Tải thông báo không thành công')),
       );
   }
@@ -76,9 +77,11 @@ export class NotificationService {
         );
       },
       onStompError: (frame) => {
+        this.notificationsSubject.next([]);
         console.error('Không thể kết nối kênh thông báo:', frame.headers['message']);
       },
       onWebSocketError: () => {
+        this.notificationsSubject.next([]);
         console.error('Kết nối WebSocket thông báo gặp lỗi.');
       },
     });

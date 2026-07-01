@@ -1,0 +1,295 @@
+/* Final dark-mode contrast layer, loaded after all shared component themes. */
+[data-theme="dark"] body {
+  color: #f7f9fb;
+}
+
+[data-theme="dark"] body .app-layout :where(
+  h1, h2, h3, h4, h5, h6, p, span, strong, small, label, legend,
+  dt, dd, th, td, li, a, button
+),
+[data-theme="dark"] body .route-content :where(
+  h1, h2, h3, h4, h5, h6, p, span, strong, small, label, legend,
+  dt, dd, th, td, li, a, button
+),
+[data-theme="dark"] body .login-page :where(
+  h1, h2, h3, p, span, strong, small, label, a, button
+),
+[data-theme="dark"] body .notification-modal :where(
+  h1, h2, h3, p, span, strong, small, label, button
+) {
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body input,
+[data-theme="dark"] body select,
+[data-theme="dark"] body textarea,
+[data-theme="dark"] body option {
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body select,
+[data-theme="dark"] body select:disabled,
+[data-theme="dark"] body select option,
+[data-theme="dark"] body select optgroup {
+  border-color: var(--dms-line) !important;
+  background-color: var(--dms-canvas) !important;
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body select:focus {
+  border-color: #0064e0 !important;
+  background-color: var(--dms-canvas) !important;
+  outline: 2px solid rgba(0, 100, 224, 0.28);
+}
+
+[data-theme="dark"] body input::placeholder,
+[data-theme="dark"] body textarea::placeholder {
+  color: #b9c4ce !important;
+  opacity: 1;
+}
+
+[data-theme="dark"] body .route-content .document-card,
+[data-theme="dark"] body .route-content .user-card,
+[data-theme="dark"] body .route-content .organization-card,
+[data-theme="dark"] body .route-content .system-card,
+[data-theme="dark"] body .route-content .detail-card,
+[data-theme="dark"] body .route-content .form-card,
+[data-theme="dark"] body .route-content .registration-card,
+[data-theme="dark"] body .route-content .success-card,
+[data-theme="dark"] body .route-content .loading-card,
+[data-theme="dark"] body .route-content .modal-panel {
+  border-color: var(--dms-line);
+  background: var(--dms-canvas);
+  color: #f7f9fb;
+}
+
+[data-theme="dark"] body .route-content .table-heading,
+[data-theme="dark"] body .route-content .card-heading,
+[data-theme="dark"] body .route-content .form-heading,
+[data-theme="dark"] body .route-content .page-heading,
+[data-theme="dark"] body .route-content .modal-heading,
+[data-theme="dark"] body .route-content .detail-content,
+[data-theme="dark"] body .route-content .create-form,
+[data-theme="dark"] body .route-content .create-user-form {
+  border-color: var(--dms-line);
+  background: var(--dms-canvas);
+}
+
+[data-theme="dark"] body .route-content table,
+[data-theme="dark"] body .route-content .table {
+  --bs-table-color: #f7f9fb;
+  --bs-table-bg: var(--dms-canvas);
+  --bs-table-border-color: var(--dms-line);
+  --bs-table-hover-color: #fff;
+  --bs-table-hover-bg: var(--dms-surface-soft);
+}
+
+[data-theme="dark"] body .route-content table th {
+  background: var(--dms-surface-soft);
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body .status-badge,
+[data-theme="dark"] body .role-badge {
+  border-color: #465966 !important;
+  background: #22313d !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .status-badge.active,
+[data-theme="dark"] body .status-badge.approved,
+[data-theme="dark"] body .status-badge.received,
+[data-theme="dark"] body .status-badge.signed {
+  border-color: #278862 !important;
+  background: #155c43 !important;
+}
+
+[data-theme="dark"] body .status-badge.inactive,
+[data-theme="dark"] body .status-badge.created,
+[data-theme="dark"] body .status-badge.sent {
+  border-color: #426fa8 !important;
+  background: #244d7d !important;
+}
+
+[data-theme="dark"] body .status-badge.deleted,
+[data-theme="dark"] body .status-badge.locked,
+[data-theme="dark"] body .status-badge.rejected,
+[data-theme="dark"] body .status-badge.failed {
+  border-color: #a74d4d !important;
+  background: #713333 !important;
+}
+
+[data-theme="dark"] body .pagination-controls button.active,
+[data-theme="dark"] body .nav-item.active,
+[data-theme="dark"] body .submenu-item.active,
+[data-theme="dark"] body .login-card > form > button[type="submit"] {
+  border-color: #0064e0 !important;
+  background: #0064e0 !important;
+  color: #fff !important;
+}
+
+/* Table action and pagination controls. */
+[data-theme="dark"] body .route-content table th,
+[data-theme="dark"] body .route-content table td {
+  border-color: #344552 !important;
+}
+
+[data-theme="dark"] body .route-content .delete-document-button,
+[data-theme="dark"] body .route-content .delete-button,
+[data-theme="dark"] body .route-content .remove-file-button {
+  border: 1px solid #a74d4d !important;
+  background: #3b2528 !important;
+  color: #ffaaa4 !important;
+}
+
+[data-theme="dark"] body .route-content .delete-document-button:hover:not(:disabled),
+[data-theme="dark"] body .route-content .delete-button:hover:not(:disabled),
+[data-theme="dark"] body .route-content .remove-file-button:hover:not(:disabled) {
+  border-color: #d86666 !important;
+  background: #542c31 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .route-content .delete-document-button svg,
+[data-theme="dark"] body .route-content .delete-button svg {
+  fill: none !important;
+  stroke: currentColor !important;
+}
+
+[data-theme="dark"] body .route-content .pagination {
+  border-color: #344552 !important;
+  background: var(--dms-canvas);
+}
+
+[data-theme="dark"] body .route-content .pagination-controls button {
+  border: 1px solid #465966 !important;
+  background: #22313d !important;
+  color: #f7f9fb !important;
+  opacity: 1;
+}
+
+[data-theme="dark"] body .route-content .pagination-controls button:hover:not(:disabled) {
+  border-color: #6ca9ff !important;
+  background: #2c4050 !important;
+}
+
+[data-theme="dark"] body .route-content .pagination-controls button.active {
+  border-color: #0064e0 !important;
+  background: #0064e0 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .route-content .pagination-controls button:disabled {
+  border-color: #2d3d49 !important;
+  background: #17232d !important;
+  color: #687985 !important;
+  cursor: not-allowed;
+}
+
+/* User list row controls. */
+[data-theme="dark"] body .route-content .avatar,
+[data-theme="dark"] body .route-content .profile-avatar {
+  background: #244d7d !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .route-content .status-action-button,
+[data-theme="dark"] body .route-content .deactivate-button,
+[data-theme="dark"] body .route-content .status-button {
+  border-color: #a74d4d !important;
+  background: #3b2528 !important;
+  color: #ffb8b3 !important;
+}
+
+[data-theme="dark"] body .route-content .status-action-button:hover:not(:disabled),
+[data-theme="dark"] body .route-content .deactivate-button:hover:not(:disabled),
+[data-theme="dark"] body .route-content .status-button:hover:not(:disabled) {
+  border-color: #d86666 !important;
+  background: #542c31 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .route-content .status-action-button.unlock,
+[data-theme="dark"] body .route-content .status-action-button.activate,
+[data-theme="dark"] body .route-content .deactivate-button.activate,
+[data-theme="dark"] body .route-content .status-button.unlock,
+[data-theme="dark"] body .route-content .status-button.activate {
+  border-color: #278862 !important;
+  background: #174c3b !important;
+  color: #a8e8c4 !important;
+}
+
+/* Organization selector pagination inside forms and modals. */
+[data-theme="dark"] body .route-content .org-pagination {
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body .route-content .org-pagination button {
+  border: 1px solid #465966 !important;
+  background: #22313d !important;
+  color: #f7f9fb !important;
+  opacity: 1;
+}
+
+[data-theme="dark"] body .route-content .org-pagination button:hover:not(:disabled) {
+  border-color: #6ca9ff !important;
+  background: #2c4050 !important;
+}
+
+[data-theme="dark"] body .route-content .org-pagination button:disabled {
+  border-color: #2d3d49 !important;
+  background: #17232d !important;
+  color: #687985 !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Incoming-document response area. */
+[data-theme="dark"] body .route-content .response-section textarea,
+[data-theme="dark"] body .route-content .response-section textarea:disabled {
+  border: 1px solid #465966 !important;
+  background: #17232d !important;
+  color: #f7f9fb !important;
+  -webkit-text-fill-color: #f7f9fb;
+  opacity: 1;
+}
+
+[data-theme="dark"] body .route-content .response-section textarea::placeholder {
+  color: #a8b3bf !important;
+  -webkit-text-fill-color: #a8b3bf;
+}
+
+[data-theme="dark"] body .route-content .response-section textarea:focus {
+  border-color: #0064e0 !important;
+  box-shadow: 0 0 0 3px rgba(0, 100, 224, 0.2) !important;
+}
+
+[data-theme="dark"] body .route-content .primary-action:disabled {
+  border-color: #426fa8 !important;
+  background: #244d7d !important;
+  color: #d8e6f4 !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+[data-theme="dark"] body .status-badge.responded {
+  border-color: #278862 !important;
+  background: #155c43 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .route-content .response-detail,
+[data-theme="dark"] body .route-content .response-detail > div {
+  border-color: #465966 !important;
+  background: #17232d !important;
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body .route-content .response-detail dt {
+  color: #b9c4ce !important;
+}
+
+[data-theme="dark"] body .route-content .response-detail dd {
+  color: #f7f9fb !important;
+  font-weight: 400;
+}
