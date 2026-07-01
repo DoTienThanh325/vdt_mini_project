@@ -18,7 +18,7 @@ export class NotificationService {
 
   readonly notifications$ = this.notificationsSubject.asObservable();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
 
   loadToday(): Observable<Notification[]> {
     return this.http
@@ -75,6 +75,8 @@ export class NotificationService {
           '/user/queue/notifications',
           (message) => this.handleSocketMessage(message),
         );
+
+        console.log("Kết nối WebSocket thành công");
       },
       onStompError: (frame) => {
         this.notificationsSubject.next([]);

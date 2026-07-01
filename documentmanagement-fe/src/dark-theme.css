@@ -272,6 +272,26 @@
   opacity: 1;
 }
 
+[data-theme="dark"] body .route-content .danger-action {
+  border-color: #ef6b73 !important;
+  background: #7f252d !important;
+  color: #fff1f2 !important;
+}
+
+[data-theme="dark"] body .route-content .danger-action:hover:not(:disabled) {
+  border-color: #ff8a91 !important;
+  background: #9f3039 !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] body .route-content .danger-action:disabled {
+  border-color: #8f555a !important;
+  background: #4d3034 !important;
+  color: #d9b8bb !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 [data-theme="dark"] body .status-badge.responded {
   border-color: #278862 !important;
   background: #155c43 !important;
