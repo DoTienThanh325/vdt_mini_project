@@ -1,4 +1,4 @@
-name: Deploy Local Docker
+name: Deploy Fullstack Local
 
 on:
   push:
@@ -10,8 +10,8 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Pull latest code
-        run: git pull origin main
-
-      - name: Rebuild backend and frontend
-        run: docker compose up -d --build backend frontend
+      - name: Go to project folder
+        run: |
+          cd D:\VDT_1\mini_project\documentmanagement
+          git pull origin main
+          docker compose up -d --build backend frontend
