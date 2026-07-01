@@ -75,6 +75,44 @@
   background: var(--dms-canvas);
 }
 
+[data-theme="dark"] body .route-content .create-form textarea,
+[data-theme="dark"] body .route-content .create-form textarea:disabled {
+  border-color: #465966 !important;
+  background: #17232d !important;
+  color: #f7f9fb !important;
+  -webkit-text-fill-color: #f7f9fb;
+  opacity: 1;
+}
+
+[data-theme="dark"] body .route-content .create-form textarea:focus {
+  border-color: #4c8fe8 !important;
+  box-shadow: 0 0 0 3px rgba(76, 143, 232, 0.2);
+  outline: none;
+}
+
+[data-theme="dark"] body .route-content .create-form .file-upload input[type="file"] {
+  border-color: #526775 !important;
+  background: #1b2b35 !important;
+  color: #dce5eb !important;
+}
+
+[data-theme="dark"] body .route-content .create-form .file-upload input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  border: 1px solid #607684;
+  border-radius: 6px;
+  background: #2b414f;
+  color: #f7f9fb;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+[data-theme="dark"] body .route-content .create-form .file-upload input[type="file"]::file-selector-button:hover {
+  border-color: #78909f;
+  background: #385362;
+}
+
 [data-theme="dark"] body .route-content table,
 [data-theme="dark"] body .route-content .table {
   --bs-table-color: #f7f9fb;
