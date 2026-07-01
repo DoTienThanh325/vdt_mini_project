@@ -113,6 +113,47 @@
   background: #385362;
 }
 
+[data-theme="dark"] body .route-content .create-form .selected-file-list li {
+  border-color: #465966 !important;
+  background: #17232d !important;
+}
+
+[data-theme="dark"] body .route-content .create-form .selected-file-list li span {
+  color: #f7f9fb !important;
+}
+
+[data-theme="dark"] body .route-content .create-form .selected-file-list li small {
+  color: #aebbc5 !important;
+}
+
+[data-theme="dark"] body .route-content .create-form .remove-file-button {
+  border-color: #ef6b73 !important;
+  background: #67232a !important;
+  color: #fff1f2 !important;
+}
+
+[data-theme="dark"] body .route-content .create-form .remove-file-button:hover:not(:disabled) {
+  background: #8a2e37 !important;
+}
+
+[data-theme="dark"] body .route-content .create-document-modal {
+  scrollbar-color: #526775 #111c24;
+}
+
+[data-theme="dark"] body .route-content .create-document-modal::-webkit-scrollbar {
+  width: 10px;
+}
+
+[data-theme="dark"] body .route-content .create-document-modal::-webkit-scrollbar-track {
+  background: #111c24;
+}
+
+[data-theme="dark"] body .route-content .create-document-modal::-webkit-scrollbar-thumb {
+  border: 2px solid #111c24;
+  border-radius: 999px;
+  background: #526775;
+}
+
 [data-theme="dark"] body .route-content table,
 [data-theme="dark"] body .route-content .table {
   --bs-table-color: #f7f9fb;
