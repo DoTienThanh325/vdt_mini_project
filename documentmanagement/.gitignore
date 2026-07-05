@@ -34,5 +34,5 @@ build/
 *.cmd
 mvnw
 
-uploads/
-logs/
+./uploads/
+./logs/
