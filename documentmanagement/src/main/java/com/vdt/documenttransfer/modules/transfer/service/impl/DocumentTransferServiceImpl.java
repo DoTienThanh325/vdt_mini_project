@@ -12,8 +12,9 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vdt.documenttransfer.common.response.PageResponse;
-import com.vdt.documenttransfer.common.util.DocumentSign;
+import com.vdt.documenttransfer.common.util.AesEncryptionUtils;
 import com.vdt.documenttransfer.modules.document.dto.DocumentResponse;
 import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.document.repository.DocumentRepository;
@@ -27,7 +28,6 @@ import com.vdt.documenttransfer.modules.signature.entity.DocumentSignature;
 import com.vdt.documenttransfer.modules.transfer.dto.DocumentTransferResponse;
 import com.vdt.documenttransfer.modules.transfer.dto.ExternalDocumentFilePayload;
 import com.vdt.documenttransfer.modules.transfer.dto.ExternalDocumentPayload;
-import com.vdt.documenttransfer.modules.transfer.dto.ExternalDocumentSignaturePayload;
 import com.vdt.documenttransfer.modules.transfer.entity.DocumentTransfer;
 import com.vdt.documenttransfer.modules.transfer.repository.DocumentTransferRepository;
 import com.vdt.documenttransfer.modules.transfer.service.DocumentTransferService;
@@ -44,6 +44,11 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
     private final DocumentTransferRepository documentTransferRepository;
     private final InterconnectedSystemRepository interconnectedSystemRepository;
     private final NotificationService notificationService;
+    private final AesEncryptionUtils aesEncryptionUtils;
+    private final ObjectMapper objectMapper;
+
+    @Value("${interconnection.encryption-key}")
+    private String secretKey;
 
     @Value("${file.upload-dir}")
     private String upload_dir;
@@ -97,8 +102,7 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
         savedTransfer = documentTransferRepository.save(transfer);
 
         try {
-            ExternalDocumentPayload payload = buildPayload(document, signature, receiverOrg, savedTransfer);
-            externalDocumentClient.sendDocument(receiverSystem, payload, authorizationHeader);
+            externalDocumentClient.sendDocument(receiverSystem, signature.getHashValue(), authorizationHeader);
 
             savedTransfer.setStatus(DocumentTransfer.Status.SENT);
             documentTransferRepository.save(savedTransfer);
@@ -123,49 +127,49 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
                 .build();
     }
 
-    private ExternalDocumentPayload buildPayload(Document document, DocumentSignature signature,
-            Organization receiverOrg, DocumentTransfer transfer) {
-        ExternalDocumentSignaturePayload signaturePayload = ExternalDocumentSignaturePayload.builder()
-                .hashValue(signature.getHashValue())
-                .algorithm(signature.getAlgorithm())
-                .signerId(signature.getSigner().getId())
-                .signerName(signature.getSigner().getUsername())
-                .build();
+    // private ExternalDocumentPayload buildPayload(Document document, DocumentSignature signature,
+    //         Organization receiverOrg, DocumentTransfer transfer) {
+    //     ExternalDocumentSignaturePayload signaturePayload = ExternalDocumentSignaturePayload.builder()
+    //             .hashValue(signature.getHashValue())
+    //             .algorithm(signature.getAlgorithm())
+    //             .signerId(signature.getSigner().getId())
+    //             .signerName(signature.getSigner().getUsername())
+    //             .build();
 
-        List<ExternalDocumentFilePayload> documentFilePayloads = new ArrayList<>();
+    //     List<ExternalDocumentFilePayload> documentFilePayloads = new ArrayList<>();
 
-        for (DocumentFile file : document.getFiles()) {
-            ExternalDocumentFilePayload filePayload = ExternalDocumentFilePayload.builder()
-                    .originalFileName(file.getOriginalFileName())
-                    .storedFileName(file.getStoredFileName())
-                    .fileType(file.getFileType())
-                    .fileSize(file.getFileSize())
-                    .base64Content(encodeFileToBase64(file.getFilePath()))
-                    .build();
+    //     for (DocumentFile file : document.getFiles()) {
+    //         ExternalDocumentFilePayload filePayload = ExternalDocumentFilePayload.builder()
+    //                 .originalFileName(file.getOriginalFileName())
+    //                 .storedFileName(file.getStoredFileName())
+    //                 .fileType(file.getFileType())
+    //                 .fileSize(file.getFileSize())
+    //                 .base64Content(encodeFileToBase64(file.getFilePath()))
+    //                 .build();
 
-            documentFilePayloads.add(filePayload);
-        }
+    //         documentFilePayloads.add(filePayload);
+    //     }
 
-        return ExternalDocumentPayload.builder()
-                .documentTransferId(transfer.getId())
-                .documentCode(document.getDocumentCode())
-                .documentType(document.getDocumentType())
-                .summary(document.getSummary())
-                .senderOrgCode(document.getSenderOrganization().getOrgCode())
-                .receiverOrgCode(receiverOrg.getOrgCode())
-                .files(documentFilePayloads)
-                .signature(signaturePayload)
-                .build();
-    }
+    //     return ExternalDocumentPayload.builder()
+    //             .documentTransferId(transfer.getId())
+    //             .documentCode(document.getDocumentCode())
+    //             .documentType(document.getDocumentType())
+    //             .summary(document.getSummary())
+    //             .senderOrgCode(document.getSenderOrganization().getOrgCode())
+    //             .receiverOrgCode(receiverOrg.getOrgCode())
+    //             .files(documentFilePayloads)
+    //             .signature(signaturePayload)
+    //             .build();
+    // }
 
-    private String encodeFileToBase64(String filePath) {
-        try {
-            byte[] fileBytes = Files.readAllBytes(Path.of(filePath));
-            return Base64.getEncoder().encodeToString(fileBytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Không thể đọc file: " + filePath, e);
-        }
-    }
+    // private String encodeFileToBase64(String filePath) {
+    //     try {
+    //         byte[] fileBytes = Files.readAllBytes(Path.of(filePath));
+    //         return Base64.getEncoder().encodeToString(fileBytes);
+    //     } catch (IOException e) {
+    //         throw new RuntimeException("Không thể đọc file: " + filePath, e);
+    //     }
+    // }
 
     private String saveReceivedFile(ExternalDocumentFilePayload filePayload, String documentCode) {
         try {
@@ -192,27 +196,27 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
     }
 
     @Override
-    public String receiveDocument(ExternalDocumentPayload payload, String apiKey) {
+    public String receiveDocument(Map<String, String> payload, String apiKey) {
         if (!interconnectedSystemRepository.existsByApiKey(apiKey)) {
             throw new RuntimeException("Api key không hợp lệ");
         }
 
-        Document document = Document.builder()
-                .documentCode(payload.getDocumentCode())
-                .documentType(payload.getDocumentType())
-                .summary(payload.getSummary())
-                .build();
+        String encryptedData = payload.get("encryptedData");
+        String json = aesEncryptionUtils.decrypt(encryptedData, secretKey);
 
-        User leader = User.builder()
-                .id(payload.getSignature().getSignerId())
-                .username(payload.getSignature().getSignerName())
-                .build();
+        ExternalDocumentPayload externalDocumentPayload;
+
+        try {
+            externalDocumentPayload = objectMapper.readValue(json, ExternalDocumentPayload.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Văn bản gửi không hợp lệ");
+        }
 
         List<DocumentFile> documentFiles = new ArrayList<>();
 
-        if (payload.getFiles() != null) {
-            for (ExternalDocumentFilePayload filePayload : payload.getFiles()) {
-                String filePath = saveReceivedFile(filePayload, payload.getDocumentCode());
+        if (externalDocumentPayload.getFiles() != null) {
+            for (ExternalDocumentFilePayload filePayload : externalDocumentPayload.getFiles()) {
+                String filePath = saveReceivedFile(filePayload, externalDocumentPayload.getDocumentCode());
                 DocumentFile file = DocumentFile.builder()
                         .storedFileName(filePayload.getStoredFileName())
                         .originalFileName(filePayload.getOriginalFileName())
@@ -222,12 +226,6 @@ public class DocumentTransferServiceImpl implements DocumentTransferService {
                         .build();
                 documentFiles.add(file);
             }
-        }
-
-        String hashValueChecking = DocumentSign.generateDocumentHash(document, documentFiles, leader);
-
-        if (!hashValueChecking.equals(payload.getSignature().getHashValue())) {
-            throw new RuntimeException("Chữ ký không hợp lệ");
         }
 
         return "Gửi thành công";

@@ -1,6 +1,8 @@
 package com.vdt.documenttransfer.modules.signature.service.impl;
 
-import com.vdt.documenttransfer.common.util.DocumentSign;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vdt.documenttransfer.common.util.AesEncryptionUtils;
+import com.vdt.documenttransfer.common.util.DocumentToPayload;
 import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.document.repository.DocumentRepository;
 import com.vdt.documenttransfer.modules.documentfile.entity.DocumentFile;
@@ -11,10 +13,12 @@ import com.vdt.documenttransfer.modules.signature.dto.VerifyDocumentSignatureRes
 import com.vdt.documenttransfer.modules.signature.entity.DocumentSignature;
 import com.vdt.documenttransfer.modules.signature.repository.DocumentSignatureRepository;
 import com.vdt.documenttransfer.modules.signature.service.DocumentSignatureService;
+import com.vdt.documenttransfer.modules.transfer.dto.ExternalDocumentPayload;
 import com.vdt.documenttransfer.modules.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +32,12 @@ public class DocumentSignatureServiceImpl implements DocumentSignatureService {
     private final DocumentFileRepository documentFileRepository;
     private final DocumentSignatureRepository documentSignatureRepository;
     private final NotificationService notificationService;
+    private final DocumentToPayload documentToPayload;
+    private final ObjectMapper objectMapper;
+    private final AesEncryptionUtils aesEncryptionUtils;
+
+    @Value("${interconnection.encryption-key}")
+    private String secretKey;
 
     @Override
     @Transactional
@@ -48,15 +58,21 @@ public class DocumentSignatureServiceImpl implements DocumentSignatureService {
         if (files == null || files.isEmpty()) {
             throw new RuntimeException("Văn bản chưa có file đính kèm, không thể ký");
         }
-
-        String hashValue = DocumentSign.generateDocumentHash(document, files, leader);
+        ExternalDocumentPayload externalDocumentPayload = documentToPayload.buiPayload(document);
+        String json = "";
+        try {
+            json = objectMapper.writeValueAsString(externalDocumentPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi mã hóa văn bản" + e);
+        }
+        String hashValue = aesEncryptionUtils.encrypt(json, secretKey);
 
         DocumentSignature signature = DocumentSignature.builder()
                 .document(document)
                 .signer(leader)
                 .status(DocumentSignature.Status.PENDING)
                 .hashValue(hashValue)
-                .algorithm("SHA-256")
+                .algorithm("AES")
                 .signedAt(LocalDateTime.now())
                 .build();
 
@@ -103,9 +119,16 @@ public class DocumentSignatureServiceImpl implements DocumentSignatureService {
             throw new RuntimeException("Văn bản chưa có file đính kèm, không thể kiểm tra");
         }
 
-        String currentHash = DocumentSign.generateDocumentHash(document, files, leader);
+        ExternalDocumentPayload externalDocumentPayload = documentToPayload.buiPayload(document);
+        String json = "";
+        try {
+            json = objectMapper.writeValueAsString(externalDocumentPayload);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi mã hóa văn bản" + e);
+        }
+        String storedJson = aesEncryptionUtils.decrypt(signature.getHashValue(), secretKey);
 
-        boolean valid = currentHash.equals(signature.getHashValue());
+        boolean valid = json.equals(storedJson);
 
         if (!valid) {
             signature.setStatus(DocumentSignature.Status.INVALID);
@@ -117,7 +140,6 @@ public class DocumentSignatureServiceImpl implements DocumentSignatureService {
         documentSignatureRepository.save(signature);
 
         return VerifyDocumentSignatureResponse.builder()
-                .hashValue(currentHash)
                 .algorithm(signature.getAlgorithm())
                 .documentCode(document.getDocumentCode())
                 .signatureStatus(signature.getStatus().name())

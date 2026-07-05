@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.vdt.documenttransfer.modules.transfer.dto.ExternalDocumentPayload;
 import com.vdt.documenttransfer.modules.transfer.service.DocumentTransferService;
 import com.vdt.documenttransfer.modules.user.entity.User;
 
@@ -25,7 +23,7 @@ public class DNSystemController {
 
     @PostMapping("")
     public ResponseEntity<?> receiveDocument(@RequestHeader("X-API-KEY") String apiKey,
-            @RequestBody ExternalDocumentPayload payload, @AuthenticationPrincipal(expression = "user") User clerk) {
+            @RequestBody Map<String, String> payload, @AuthenticationPrincipal(expression = "user") User clerk) {
         try {
             if (clerk == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");

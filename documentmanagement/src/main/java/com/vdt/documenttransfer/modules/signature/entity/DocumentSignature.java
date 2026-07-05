@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -33,7 +34,8 @@ public class DocumentSignature {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(name = "hash_value", nullable = false, unique = true)
+	@Lob
+	@Column(name = "hash_value", nullable = false, columnDefinition = "LONGTEXT", unique = true)
 	private String hashValue;
 
 	@Column(nullable = false, length = 100)

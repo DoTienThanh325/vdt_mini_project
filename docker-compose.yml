@@ -19,6 +19,8 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: 86400000
 
+      AES_SECRET_KEY: ${AES_SECRET_KEY}
+
       REDIS_HOST: redis
       REDIS_PORT: 6379
 

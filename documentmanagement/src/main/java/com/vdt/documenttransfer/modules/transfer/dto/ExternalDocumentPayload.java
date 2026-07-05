@@ -12,8 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExternalDocumentPayload {
-    private Integer documentTransferId;
-    
     private String documentCode;
 
     private String documentType;
@@ -22,9 +20,5 @@ public class ExternalDocumentPayload {
 
     private String senderOrgCode;
 
-    private String receiverOrgCode;
-
     private List<ExternalDocumentFilePayload> files;
-
-    private ExternalDocumentSignaturePayload signature;
 }

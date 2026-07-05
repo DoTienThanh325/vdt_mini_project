@@ -1,7 +1,10 @@
 package com.vdt.documenttransfer.modules.document.service.impl;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -18,6 +21,7 @@ import com.vdt.documenttransfer.modules.document.entity.Document;
 import com.vdt.documenttransfer.modules.document.mapper.EntityToDTO;
 import com.vdt.documenttransfer.modules.document.repository.DocumentRepository;
 import com.vdt.documenttransfer.modules.document.service.DocumentService;
+import com.vdt.documenttransfer.modules.documentfile.entity.DocumentFile;
 import com.vdt.documenttransfer.modules.documentfile.repository.DocumentFileRepository;
 import com.vdt.documenttransfer.modules.notification.service.NotificationService;
 import com.vdt.documenttransfer.modules.organization.entity.Organization;
@@ -255,21 +259,51 @@ public class DocumentServiceImpl implements DocumentService {
         }
 
         @Override
+        @Transactional
         public void deleteByDocument_Id(Integer id) {
-                Document document = documentRepository.findById(id).orElseThrow(() -> new RuntimeException("Văn bản không hợp lệ"));
+                Document document = documentRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException("Văn bản không hợp lệ"));
 
-                if(document.getTransfers() == null) {
+                List<DocumentFile> files = document.getFiles();
+
+                if (document.getTransfers() == null) {
                         throw new RuntimeException("Văn bản đã gửi đi không thể xóa");
                 }
 
-                if(document.getFiles() != null) {
+                if (document.getFiles() != null) {
                         documentFileRepository.deleteByDocument_Id(id);
                 }
 
-                if(document.getSignature() != null) {
+                if (document.getSignature() != null) {
                         documentSignatureRepository.deleteByDocument_Id(id);
                 }
 
                 documentRepository.deleteById(id);
+
+                for (DocumentFile file : files) {
+                        deletePhysicalFile(file.getFilePath());
+                }
+        }
+
+        private void deletePhysicalFile(String filePath) {
+                if (filePath == null || filePath.isBlank()) {
+                        return;
+                }
+
+                try {
+                        Path path = Path.of(filePath).normalize();
+
+                        boolean deleted = Files.deleteIfExists(path);
+
+                        if (!deleted) {
+                                System.out.println(
+                                                "File không tồn tại: " + path);
+                        }
+
+                } catch (IOException e) {
+                        throw new RuntimeException(
+                                        "Không thể xóa file vật lý: " + filePath,
+                                        e);
+                }
         }
 }

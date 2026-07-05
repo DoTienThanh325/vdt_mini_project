@@ -1,4 +1,4 @@
-package com.vdt.documenttransfer.modules.system.HCM;
+package com.vdt.documenttransfer.modules.system.HN;
 
 import java.util.Map;
 
@@ -17,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/interconnect/hcm/receive")
-public class HCMSystemController {
+@RequestMapping("/api/interconnect/hn/receive")
+public class HNSystemController {
     private final DocumentTransferService documentTransferService;
 
     @PostMapping("")

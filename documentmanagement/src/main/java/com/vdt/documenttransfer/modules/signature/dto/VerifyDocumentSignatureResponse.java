@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @Builder
 public class VerifyDocumentSignatureResponse {
-	private String hashValue;
 	private String algorithm;
     private String signatureStatus;
 	private String documentCode;

@@ -33,3 +33,6 @@ build/
 .vscode/
 *.cmd
 mvnw
+
+uploads/
+logs/

@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS document_files (
 -- 7. document_signatures
 CREATE TABLE IF NOT EXISTS document_signatures (
     id INT NOT NULL AUTO_INCREMENT,
-    hash_value VARCHAR(255) NOT NULL,
+    hash_value LONGTEXT NOT NULL,
     algorithm VARCHAR(100) NOT NULL,
     status ENUM(
         'PENDING',
